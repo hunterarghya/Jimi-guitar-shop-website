@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Posts Debug Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .console-output {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        max-height: 600px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .console-output .log {
+        color: #d4d4d4;
+      }
+      .console-output .error {
+        color: #f48771;
+      }
+      .console-output .info {
+        color: #4ec9b0;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        background: #007acc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+      button:hover {
+        background: #005a9e;
+      }
+      h1,
+      h2 {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My Posts Debug Test</h1>
+
+    <div class="container">
+      <h2>Test Console</h2>
+      <button onclick="testCreatePostElement()">
+        Test Create Post Element
+      </button>
+      <button onclick="testElementLookup()">Test Element Lookup</button>
+      <button onclick="testApiCall()">Test API Call</button>
+      <button onclick="clearConsole()">Clear Console</button>
+
+      <div id="console" class="console-output"></div>
+    </div>
+
+    <script>
+      // Override console to capture output
+      const originalLog = console.log;
+      const originalError = console.error;
+      const consoleDiv = document.getElementById("console");
+
+      function addToConsole(message, type = "log") {
+        const timestamp = new Date().toLocaleTimeString();
+        const line = `[${timestamp}] ${message}`;
+        const span = document.createElement("div");
+        span.className = type;
+        span.textContent = line;
+        consoleDiv.appendChild(span);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }
+
+      console.log = function (...args) {
+        originalLog(...args);
+        addToConsole(args.join(" "), "log");
+      };
+
+      console.error = function (...args) {
+        originalError(...args);
+        addToConsole(args.join(" "), "error");
+      };
+
+      console.info = function (...args) {
+        originalLog(...args);
+        addToConsole(args.join(" "), "info");
+      };
+
+      function clearConsole() {
+        consoleDiv.innerHTML = "";
+      }
+
+      // Mock post object like the API would return
+      function testCreatePostElement() {
+        console.log("=== Testing createUserPostElement ===");
+
+        const mockPost = {
+          _id: "507f1f77bcf86cd799439011",
+          id: "507f1f77bcf86cd799439011",
+          user_id: "user123",
+          author_name: "Test User",
+          caption: "This is a test post",
+          images: [],
+          likes_count: 5,
+          comments_count: 2,
+          is_liked_by_user: false,
+          is_saved_by_user: false,
+          created_at: "2024-01-29T10:00:00",
+          updated_at: "2024-01-29T10:00:00",
+        };
+
+        console.log("Mock post object:", mockPost);
+        console.log("Post._id:", mockPost._id);
+        console.log("Post.id:", mockPost.id);
+        console.log("Post._id || Post.id:", mockPost._id || mockPost.id);
+
+        // Simulate what createUserPostElement does
+        const postId = mockPost._id || mockPost.id;
+        console.log(`Generated postId: ${postId}`);
+        console.log(`Element ID would be: likers-${postId}`);
+        console.log(`Element ID would be: comments-${postId}`);
+
+        // Create element like createUserPostElement does
+        const postEl = document.createElement("div");
+        postEl.className = "post-card";
+        postEl.setAttribute("data-post-id", postId);
+
+        postEl.innerHTML = `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                    <div style="font-weight: bold;">Test Post Element</div>
+                    <div>Author: ${mockPost.author_name}</div>
+                    <div style="cursor: pointer; margin: 10px 0;" onclick="testShowPostLikers('${postId}', this)">
+                        ❤️ ${mockPost.likes_count} likes
+                    </div>
+                    <div id="likers-${postId}" style="display: none; background: #f5f5f5; padding: 10px; margin-top: 10px;">
+                        <strong>Likers:</strong>
+                        <ul>
+                            <li>User 1</li>
+                            <li>User 2</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+        const container =
+          document.getElementById("test-posts-container") ||
+          createContainer("test-posts-container", "Test Posts Container");
+        container.appendChild(postEl);
+        console.log("Element appended to DOM");
+      }
+
+      function testElementLookup() {
+        console.log("=== Testing Element Lookup ===");
+
+        const postId = "507f1f77bcf86cd799439011";
+        const likersId = `likers-${postId}`;
+
+        console.log(`Looking up element: ${likersId}`);
+        const element = document.getElementById(likersId);
+
+        if (element) {
+          console.log(`✓ Found element:`, element);
+          console.log(`  Display: ${element.style.display}`);
+          console.log(`  Content: ${element.innerHTML.substring(0, 50)}...`);
+        } else {
+          console.error(`✗ Element not found: ${likersId}`);
+        }
+      }
+
+      function testShowPostLikers(postId, element) {
+        console.log(`=== testShowPostLikers called with postId: ${postId} ===`);
+
+        const likersContainer = document.getElementById(`likers-${postId}`);
+        console.log(`Searching for element with ID: likers-${postId}`);
+
+        if (!likersContainer) {
+          console.error(`Could not find likers container for post: ${postId}`);
+          return;
+        }
+
+        console.log(`✓ Found likers container`);
+        likersContainer.style.display =
+          likersContainer.style.display === "none" ? "block" : "none";
+        console.log(`Display toggled to: ${likersContainer.style.display}`);
+      }
+
+      function testApiCall() {
+        console.log("=== Testing API Call ===");
+        console.log("Making GET request to /api/v1/posts?page=1&page_size=5");
+
+        fetch("/api/v1/posts?page=1&page_size=5", {
+          headers: {
+            Authorization:
+              "Bearer " + (localStorage.getItem("token") || "test_token"),
+          },
+        })
+          .then((response) => {
+            console.log(`Response status: ${response.status}`);
+            return response.json();
+          })
+          .then((data) => {
+            console.log("API Response:", data);
+
+            if (data.items && data.items.length > 0) {
+              const post = data.items[0];
+              console.log("First post object keys:", Object.keys(post));
+              console.log("First post:", post);
+              console.log("Post._id:", post._id);
+              console.log("Post.id:", post.id);
+            }
+          })
+          .catch((error) => {
+            console.error("API Error:", error.message);
+          });
+      }
+
+      function createContainer(id, title) {
+        const container = document.createElement("div");
+        container.id = id;
+        container.className = "container";
+        container.innerHTML = `<h2>${title}</h2>`;
+        document.body.appendChild(container);
+        return container;
+      }
+
+      // Log page load
+      console.log("=== Debug Test Page Loaded ===");
+      console.log("Ready to test. Click buttons above to run tests.");
+    </script>
+  </body>
+</html>

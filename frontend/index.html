@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jimi - Music Marketplace & Community</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 900px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 60px;
+      }
+
+      .header h1 {
+        font-size: 48px;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .header p {
+        font-size: 18px;
+        opacity: 0.9;
+      }
+
+      .portals {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+      }
+
+      .portal {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s;
+      }
+
+      .portal:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+      }
+
+      .portal-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+      }
+
+      .portal h2 {
+        font-size: 28px;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .portal-description {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
+      .portal-features {
+        text-align: left;
+        margin-bottom: 30px;
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        font-size: 13px;
+      }
+
+      .portal-features li {
+        margin-bottom: 8px;
+        color: #555;
+      }
+
+      .portal-features li:before {
+        content: "✓ ";
+        color: #667eea;
+        font-weight: 600;
+        margin-right: 8px;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 14px 40px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #5568d3;
+        transform: scale(1.05);
+      }
+
+      .btn-admin {
+        background: #1a1a2e;
+      }
+
+      .btn-admin:hover {
+        background: #0f3460;
+      }
+
+      .footer {
+        text-align: center;
+        color: white;
+        margin-top: 60px;
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 36px;
+        }
+
+        .portal {
+          padding: 30px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎸 Welcome to Jimi</h1>
+        <p>Music Marketplace & Social Community</p>
+      </div>
+
+      <div class="portals">
+        <!-- User Portal -->
+        <div class="portal">
+          <div class="portal-icon">👥</div>
+          <h2>User Portal</h2>
+          <p class="portal-description">
+            Browse musical instruments, connect with musicians, and share your
+            musical journey
+          </p>
+          <ul class="portal-features">
+            <li>Browse & buy instruments</li>
+            <li>Create & share posts</li>
+            <li>Like & comment</li>
+            <li>Chat with AI assistant</li>
+            <li>Update your profile</li>
+          </ul>
+          <a href="user/login.html" class="btn">Enter User Portal</a>
+        </div>
+
+        <!-- Admin Portal -->
+        <div class="portal">
+          <div class="portal-icon">🔐</div>
+          <h2>Admin Portal</h2>
+          <p class="portal-description">
+            Manage products, moderate content, and monitor platform analytics
+          </p>
+          <ul class="portal-features">
+            <li>Manage inventory</li>
+            <li>Moderate posts</li>
+            <li>Create discounts</li>
+            <li>Track orders</li>
+            <li>View analytics</li>
+          </ul>
+          <a href="admin/login.html" class="btn btn-admin"
+            >Enter Admin Portal</a
+          >
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          🎵 Connect with the global music community | Buy & Sell Quality
+          Instruments
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

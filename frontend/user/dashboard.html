@@ -1,0 +1,1815 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jimi - Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: #f5f5f5;
+      }
+
+      .navbar {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: 700;
+        color: #667eea;
+        cursor: pointer;
+      }
+
+      .nav-tabs {
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 500;
+        color: #666;
+        transition: all 0.3s;
+        border-bottom: 2px solid transparent;
+      }
+
+      .nav-tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+
+      .nav-tab:hover {
+        color: #667eea;
+      }
+
+      .user-menu {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .user-info {
+        text-align: right;
+      }
+
+      .user-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .user-email {
+        color: #999;
+        font-size: 12px;
+      }
+
+      .logout-btn {
+        padding: 8px 16px;
+        background: #f0f0f0;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      .logout-btn:hover {
+        background: #e0e0e0;
+      }
+
+      .main-content {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .section {
+        display: none;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      /* Marketplace styles */
+      .marketplace-header {
+        margin-bottom: 30px;
+      }
+
+      .marketplace-header h2 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .filters {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .filter-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .filter-group input,
+      .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .product-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+      }
+
+      .product-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 200px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 12px;
+      }
+
+      .product-info {
+        padding: 15px;
+      }
+
+      .product-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .product-category {
+        color: #999;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .product-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .product-rating {
+        color: #ffa500;
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .product-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12px;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 30px 0;
+      }
+
+      .pagination button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .pagination button.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      /* Social styles */
+      .social-container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .create-post-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .create-post-header {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #667eea;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+
+      .create-post-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .create-post-input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .post-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .post-author {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .post-time {
+        color: #999;
+        font-size: 12px;
+      }
+
+      .post-caption {
+        color: #333;
+        line-height: 1.5;
+        margin-bottom: 15px;
+      }
+
+      .post-images {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .post-stats {
+        display: flex;
+        gap: 20px;
+        padding: 15px 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .post-actions {
+        display: flex;
+        gap: 20px;
+      }
+
+      .post-action {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: #666;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+        border-radius: 4px;
+      }
+
+      .post-action:hover {
+        background: #f0f0f0;
+      }
+
+      .post-action.liked {
+        color: #e74c3c;
+      }
+
+      .post-action.saved {
+        color: #f39c12;
+      }
+
+      .comments-section {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+      }
+
+      .comment {
+        margin-bottom: 15px;
+      }
+
+      .comment-author {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .comment-text {
+        color: #666;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .comment-input-group {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      .comment-input-group input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-size: 14px;
+      }
+
+      .comment-input-group button {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      /* Profile styles */
+      .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .profile-header {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: #667eea;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin-bottom: 15px;
+      }
+
+      .profile-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .profile-email {
+        color: #999;
+        margin-bottom: 20px;
+      }
+
+      .profile-form {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-header {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .modal-close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #999;
+        margin-top: -10px;
+      }
+
+      .modal-close:hover {
+        color: #333;
+      }
+
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      .error {
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .success {
+        color: #388e3c;
+        background: #e8f5e9;
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 30px;
+        color: #999;
+      }
+
+      .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="logo">🎸 Jimi</div>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showSection('marketplace')">
+          🏪 Marketplace
+        </button>
+        <button class="nav-tab" onclick="showSection('social')">
+          📱 Social
+        </button>
+        <button class="nav-tab" onclick="showSection('profile')">
+          👤 Profile
+        </button>
+        <button class="nav-tab" onclick="showSection('chatbot')">
+          🤖 Ask Jimi
+        </button>
+      </div>
+
+      <div class="user-menu">
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email" id="userEmail">Loading...</div>
+        </div>
+        <button
+          class="logout-btn"
+          onclick="document.getElementById('cartModal').classList.add('active')"
+        >
+          🛒 Cart
+        </button>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Marketplace Section -->
+      <section id="marketplace" class="section active">
+        <div class="marketplace-header">
+          <h2>🏪 Marketplace</h2>
+          <div class="filters">
+            <div class="filter-group">
+              <label>Category</label>
+              <select id="categoryFilter" onchange="loadProducts(1)">
+                <option value="">All Categories</option>
+                <option value="guitar">Guitars</option>
+                <option value="drums">Drums</option>
+                <option value="keyboard">Keyboards</option>
+                <option value="bass">Bass</option>
+                <option value="percussion">Percussion</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Min Price</label>
+              <input
+                type="number"
+                id="minPrice"
+                placeholder="0"
+                onchange="loadProducts(1)"
+              />
+            </div>
+            <div class="filter-group">
+              <label>Max Price</label>
+              <input
+                type="number"
+                id="maxPrice"
+                placeholder="100000"
+                onchange="loadProducts(1)"
+              />
+            </div>
+            <div class="filter-group">
+              <label>Sort By</label>
+              <select id="sortBy" onchange="loadProducts(1)">
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="productsContainer" class="products-grid">
+          <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <p>Loading products...</p>
+          </div>
+        </div>
+
+        <div class="pagination" id="productPagination"></div>
+      </section>
+
+      <!-- Social Section -->
+      <section id="social" class="section">
+        <div class="social-container">
+          <h2 style="margin-bottom: 20px">📱 Social Feed</h2>
+
+          <!-- Create Post -->
+          <div class="create-post-section">
+            <div class="create-post-header">
+              <div class="avatar" id="userAvatar">U</div>
+              <input
+                type="text"
+                class="create-post-input"
+                placeholder="Share something..."
+                onclick="openCreatePostModal()"
+                readonly
+              />
+            </div>
+          </div>
+
+          <!-- Posts Feed -->
+          <div id="postsContainer">
+            <div class="empty-state">
+              <div class="empty-state-icon">📝</div>
+              <p>Loading posts...</p>
+            </div>
+          </div>
+
+          <div class="pagination" id="postPagination"></div>
+        </div>
+      </section>
+
+      <!-- Profile Section -->
+      <section id="profile" class="section">
+        <div class="profile-container">
+          <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <div class="profile-name" id="profileName">Loading...</div>
+            <div class="profile-email" id="profileEmail">Loading...</div>
+          </div>
+
+          <div class="profile-form">
+            <h3 style="margin-bottom: 20px">Edit Profile</h3>
+            <div id="profileError" class="error"></div>
+            <div id="profileSuccess" class="success"></div>
+
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="profileFirstName" />
+            </div>
+
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="profileLastName" />
+            </div>
+
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="profilePhone" />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="updateProfile()">
+                Save Changes
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top: 30px">
+            <h3 style="margin-bottom: 20px">My Posts</h3>
+            <div id="userPostsContainer">
+              <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <p>No posts yet</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 30px">
+            <h3 style="margin-bottom: 20px">Saved Posts</h3>
+            <div id="savedPostsContainer">
+              <div class="empty-state">
+                <div class="empty-state-icon">💾</div>
+                <p>No saved posts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chatbot Section -->
+      <section id="chatbot" class="section">
+        <div style="max-width: 600px; margin: 0 auto">
+          <h2 style="margin-bottom: 20px">🤖 Ask Jimi</h2>
+          <div
+            style="
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <div
+              id="chatContainer"
+              style="
+                height: 400px;
+                overflow-y: auto;
+                padding-bottom: 20px;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                padding: 15px;
+              "
+            >
+              <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <p>Chat feature coming soon...</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px">
+              <input
+                type="text"
+                placeholder="Ask Jimi..."
+                id="chatInput"
+                style="
+                  flex: 1;
+                  padding: 12px;
+                  border: 1px solid #ddd;
+                  border-radius: 6px;
+                "
+              />
+              <button
+                class="btn btn-primary"
+                onclick="sendChatMessage()"
+                style="width: 100px"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeCreatePostModal()"
+          >&times;</span
+        >
+        <div class="modal-header">Create Post</div>
+
+        <div id="createPostError" class="error"></div>
+
+        <div class="form-group">
+          <label>What's on your mind?</label>
+          <textarea
+            id="postCaption"
+            style="
+              width: 100%;
+              min-height: 120px;
+              padding: 12px;
+              border: 1px solid #ddd;
+              border-radius: 6px;
+              font-family: inherit;
+              font-size: 14px;
+            "
+            placeholder="Write your post..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Images (URLs, comma-separated)</label>
+          <input
+            type="text"
+            id="postImages"
+            placeholder="https://example.com/image.jpg"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #ddd;
+              border-radius: 6px;
+            "
+          />
+        </div>
+
+        <div style="display: flex; gap: 10px">
+          <button
+            class="btn btn-primary"
+            onclick="submitPost()"
+            style="flex: 1"
+          >
+            Post
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="closeCreatePostModal()"
+            style="flex: 1"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeCartModal()">&times;</span>
+        <div class="modal-header">Shopping Cart</div>
+
+        <div
+          id="cartItems"
+          style="max-height: 300px; overflow-y: auto; margin-bottom: 20px"
+        >
+          <div class="empty-state">
+            <p>Cart is empty</p>
+          </div>
+        </div>
+
+        <div
+          style="
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-bottom: 20px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+            "
+          >
+            <span>Total:</span>
+            <span style="font-weight: 700; color: #667eea" id="cartTotal"
+              >₹0</span
+            >
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px">
+          <button class="btn btn-primary" onclick="checkout()" style="flex: 1">
+            Checkout
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="closeCartModal()"
+            style="flex: 1"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script>
+      // Immediate test to see if JavaScript is working
+      console.log("=== DASHBOARD SCRIPT LOADED ===");
+
+      let currentPage = 1;
+      let currentPostPage = 1;
+      let currentUser = null;
+
+      window.addEventListener("load", () => {
+        if (!TokenManager.getAccessToken()) {
+          window.location.href = "login.html";
+        }
+
+        initializeUser();
+        loadProducts(1);
+        loadFeed(1);
+
+        // Check if token changed when tab regains focus
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden) {
+            // Tab is now visible, verify token hasn't changed
+            verifyCurrentUser();
+          }
+        });
+      });
+
+      async function verifyCurrentUser() {
+        try {
+          const profile = await UserAPI.getProfile();
+          // If the user ID changed, reload the page
+          if (currentUser && profile.id !== currentUser.id) {
+            console.warn("User context changed, reloading...");
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error("Failed to verify user:", error);
+        }
+      }
+
+      async function initializeUser() {
+        try {
+          const profile = await UserAPI.getProfile();
+          currentUser = profile;
+
+          const initials =
+            profile.first_name.charAt(0) + profile.last_name.charAt(0);
+          document.getElementById("userName").textContent =
+            `${profile.first_name} ${profile.last_name}`;
+          document.getElementById("userEmail").textContent = profile.email;
+
+          // Set initials in avatars
+          document.querySelectorAll('[id*="Avatar"]').forEach((el) => {
+            el.textContent = initials;
+          });
+
+          // Set profile data
+          document.getElementById("profileName").textContent =
+            `${profile.first_name} ${profile.last_name}`;
+          document.getElementById("profileEmail").textContent = profile.email;
+          document.getElementById("profileFirstName").value =
+            profile.first_name;
+          document.getElementById("profileLastName").value = profile.last_name;
+          document.getElementById("profilePhone").value = profile.phone || "";
+        } catch (error) {
+          console.error("Failed to load user profile:", error);
+        }
+      }
+
+      function showSection(sectionId) {
+        document
+          .querySelectorAll(".section")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(sectionId).classList.add("active");
+
+        document
+          .querySelectorAll(".nav-tab")
+          .forEach((tab) => tab.classList.remove("active"));
+        event.target.classList.add("active");
+
+        // Load specific section data
+        if (sectionId === "profile") {
+          loadUserPosts();
+          loadSavedPosts();
+        }
+      }
+
+      async function loadProducts(page) {
+        try {
+          const category = document.getElementById("categoryFilter").value;
+          const minPrice = document.getElementById("minPrice").value;
+          const maxPrice = document.getElementById("maxPrice").value;
+          const sortBy = document.getElementById("sortBy").value;
+
+          // Parse sort value
+          let sort_by = "created_at";
+          let sort_order = "desc";
+
+          if (sortBy === "price-asc") {
+            sort_by = "price";
+            sort_order = "asc";
+          } else if (sortBy === "price-desc") {
+            sort_by = "price";
+            sort_order = "desc";
+          } else if (sortBy === "newest") {
+            sort_by = "created_at";
+            sort_order = "desc";
+          }
+
+          const response = await ProductAPI.listProducts({
+            category: category || null,
+            min_price: minPrice ? parseInt(minPrice) : null,
+            max_price: maxPrice ? parseInt(maxPrice) : null,
+            sort_by: sort_by,
+            sort_order: sort_order,
+            page: page,
+            page_size: 12,
+          });
+
+          const container = document.getElementById("productsContainer");
+          container.innerHTML = "";
+
+          if (response.items.length === 0) {
+            container.innerHTML =
+              '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-state-icon">📦</div><p>No products found</p></div>';
+          } else {
+            response.items.forEach((product) => {
+              const card = document.createElement("div");
+              card.className = "product-card";
+              card.innerHTML = `
+                            <div class="product-image">🎸 ${product.name}</div>
+                            <div class="product-info">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-category">${product.category}</div>
+                                <div class="product-price">₹${product.price}</div>
+                                <div class="product-rating">⭐ ${product.rating || 0}/5</div>
+                                <div class="product-actions">
+                                    <button class="btn btn-primary" onclick="addToCart('${product._id || product.id}', '${product.name}', ${product.price})">Add to Cart</button>
+                                </div>
+                            </div>
+                        `;
+              container.appendChild(card);
+            });
+          }
+
+          // Pagination
+          const pagination = document.getElementById("productPagination");
+          pagination.innerHTML = "";
+          for (let i = 1; i <= response.total_pages; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = i;
+            btn.className = i === page ? "active" : "";
+            btn.onclick = () => loadProducts(i);
+            pagination.appendChild(btn);
+          }
+
+          currentPage = page;
+        } catch (error) {
+          console.error("Failed to load products:", error);
+        }
+      }
+
+      async function loadFeed(page) {
+        try {
+          const response = await SocialAPI.getFeed(page, 10);
+
+          const container = document.getElementById("postsContainer");
+          container.innerHTML = "";
+
+          if (response.items.length === 0) {
+            container.innerHTML =
+              '<div class="empty-state"><div class="empty-state-icon">📝</div><p>No posts yet</p></div>';
+          } else {
+            response.items.forEach((post) => {
+              const postId = post._id || post.id;
+              console.log(`[loadFeed] Creating post with ID: ${postId}`, {
+                post,
+              });
+              container.appendChild(createPostElement(post));
+            });
+          }
+
+          // Pagination
+          const pagination = document.getElementById("postPagination");
+          pagination.innerHTML = "";
+          for (let i = 1; i <= response.total_pages; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = i;
+            btn.className = i === page ? "active" : "";
+            btn.onclick = () => loadFeed(i);
+            pagination.appendChild(btn);
+          }
+
+          currentPostPage = page;
+        } catch (error) {
+          console.error("Failed to load feed:", error);
+        }
+      }
+
+      function createPostElement(post) {
+        const postEl = document.createElement("div");
+        postEl.className = "post-card";
+        postEl.setAttribute("data-post-id", post._id || post.id);
+
+        const images =
+          post.images && post.images.length > 0
+            ? post.images
+                .map(
+                  (img) =>
+                    `<img src="${img}" class="post-images" alt="Post image" />`,
+                )
+                .join("")
+            : "";
+
+        const currentUserId = TokenManager.getUserId();
+        const isOwner = post.user_id === currentUserId;
+
+        postEl.innerHTML = `
+                <div class="post-header">
+                    <div>
+                        <div class="post-author">${post.author_name}</div>
+                        <div class="post-time">${formatDate(post.created_at)}</div>
+                    </div>
+                    ${isOwner ? `<button class="btn-secondary" onclick="deletePost('${post._id || post.id}')" style="padding: 5px 10px;">Delete</button>` : ""}
+                </div>
+                
+                <div class="post-caption">${post.caption}</div>
+                ${images}
+                
+                <div class="post-stats">
+                    <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
+                    <span style="cursor: pointer;" onclick="toggleComments('${post._id || post.id}', null)">💬 ${post.comments_count || 0} comments</span>
+                </div>
+                
+                <div id="likers-${post._id || post.id}" style="display: none; padding: 10px; background: #f5f5f5; border-radius: 4px; margin: 10px 0; font-size: 0.9em;"></div>
+                
+                <div class="post-actions">
+                    <button class="post-action ${post.is_liked_by_user ? "liked" : ""}" onclick="toggleLike('${post._id || post.id}', this)">❤️ Like</button>
+                    <button class="post-action" onclick="toggleComments('${post._id || post.id}', this)">💬 Comment</button>
+                    <button class="post-action ${post.is_saved_by_user ? "saved" : ""}" onclick="toggleSave('${post._id || post.id}', this)">💾 Save</button>
+                </div>
+                
+                <div class="comments-section" id="comments-${post._id || post.id}" style="display: none;">
+                    <div id="comments-list-${post._id || post.id}"></div>
+                    <div class="comment-input-group">
+                        <input type="text" placeholder="Add a comment..." id="comment-input-${post._id || post.id}" />
+                        <button onclick="submitComment('${post._id || post.id}')">Post</button>
+                    </div>
+                </div>
+            `;
+
+        return postEl;
+      }
+
+      function toggleComments(postId, button) {
+        console.log(`[toggleComments] Called with postId: ${postId}`);
+        const commentsSection = document.getElementById(`comments-${postId}`);
+        if (!commentsSection) {
+          console.error(`Could not find comments section for post: ${postId}`, {
+            searchedId: `comments-${postId}`,
+          });
+          return;
+        }
+
+        console.log(
+          `[toggleComments] Found comments section for post: ${postId}`,
+        );
+
+        commentsSection.style.display =
+          commentsSection.style.display === "none" ? "block" : "none";
+
+        if (commentsSection.style.display === "block") {
+          loadComments(postId);
+        }
+      }
+
+      async function loadComments(postId) {
+        try {
+          const response = await SocialAPI.getComments(postId);
+          const container = document.getElementById(`comments-list-${postId}`);
+
+          if (!container) {
+            console.error(
+              `Could not find comments list container for post: ${postId}`,
+            );
+            return;
+          }
+
+          container.innerHTML = "";
+
+          if (!response.items || response.items.length === 0) {
+            container.innerHTML =
+              "<p style='color: #999; font-size: 0.9em;'>No comments yet</p>";
+            return;
+          }
+
+          response.items.forEach((comment) => {
+            const commentEl = document.createElement("div");
+            commentEl.className = "comment";
+            commentEl.innerHTML = `
+                        <div class="comment-author" style="font-weight: bold; color: #333;">${comment.author_name || "Unknown"}</div>
+                        <div class="comment-text" style="color: #555; margin-top: 5px;">${comment.text}</div>
+                        <div style="font-size: 0.8em; color: #999; margin-top: 3px;">${new Date(comment.created_at).toLocaleDateString()}</div>
+                    `;
+            container.appendChild(commentEl);
+          });
+        } catch (error) {
+          console.error("Failed to load comments:", error);
+        }
+      }
+
+      async function submitComment(postId) {
+        const input = document.getElementById(`comment-input-${postId}`);
+
+        if (!input) {
+          console.error(`Could not find comment input for post: ${postId}`);
+          return;
+        }
+
+        const commentGroup = input.parentElement;
+        const button = commentGroup.querySelector("button");
+
+        if (!input.value.trim()) return;
+
+        const originalText = button.textContent;
+        button.textContent = "Posting...";
+        button.disabled = true;
+
+        try {
+          const response = await SocialAPI.addComment(postId, input.value);
+          // Handle both error in response and actual errors
+          if (response && response.error) {
+            throw new Error(response.error);
+          }
+          input.value = "";
+          button.textContent = "✓ Posted!";
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+          }, 2000);
+          loadComments(postId);
+          // Also refresh the post to update comment count
+          loadFeed(currentPostPage);
+          loadUserPosts();
+        } catch (error) {
+          console.error("Failed to add comment:", error);
+          button.textContent = "Error";
+          alert(
+            "Failed to post comment: " + (error.message || "Unknown error"),
+          );
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+          }, 2000);
+        }
+      }
+
+      async function toggleLike(postId, button) {
+        try {
+          if (button.classList.contains("liked")) {
+            await SocialAPI.unlikePost(postId);
+            button.classList.remove("liked");
+          } else {
+            await SocialAPI.likePost(postId);
+            button.classList.add("liked");
+          }
+          loadFeed(currentPostPage);
+          loadUserPosts();
+        } catch (error) {
+          console.error("Failed to toggle like:", error);
+        }
+      }
+
+      async function toggleSave(postId, button) {
+        try {
+          if (button.classList.contains("saved")) {
+            await SocialAPI.unsavePost(postId);
+            button.classList.remove("saved");
+          } else {
+            await SocialAPI.savePost(postId);
+            button.classList.add("saved");
+          }
+          loadFeed(currentPostPage);
+          loadUserPosts();
+          loadSavedPosts();
+        } catch (error) {
+          console.error("Failed to toggle save:", error);
+        }
+      }
+
+      async function deletePost(postId) {
+        if (!confirm("Are you sure you want to delete this post?")) return;
+
+        try {
+          await SocialAPI.deletePost(postId);
+          loadFeed(currentPostPage);
+          loadUserPosts();
+          loadSavedPosts();
+        } catch (error) {
+          console.error("Failed to delete post:", error);
+        }
+      }
+
+      async function showPostLikers(postId, element) {
+        console.log(`[showPostLikers] Called with postId: ${postId}`);
+        const likersContainer = document.getElementById(`likers-${postId}`);
+
+        if (!likersContainer) {
+          console.error(`Could not find likers container for post: ${postId}`, {
+            searchedId: `likers-${postId}`,
+          });
+          return;
+        }
+
+        console.log(
+          `[showPostLikers] Found likers container for post: ${postId}`,
+        );
+
+        // Toggle visibility
+        if (likersContainer.style.display === "block") {
+          console.log(`[showPostLikers] Hiding likers container`);
+          likersContainer.style.display = "none";
+          return;
+        }
+
+        try {
+          console.log(
+            `[showPostLikers] Showing likers, setting display to block and loading message`,
+          );
+          likersContainer.innerHTML = "<em>Loading likers...</em>";
+          likersContainer.style.display = "block";
+
+          console.log(`[showPostLikers] Calling SocialAPI.getLikes(${postId})`);
+          const response = await SocialAPI.getLikes(postId);
+          console.log(`[showPostLikers] Got response from API:`, response);
+
+          likersContainer.innerHTML = "";
+
+          if (!response.items || response.items.length === 0) {
+            console.log(
+              `[showPostLikers] No likers found, showing empty message`,
+            );
+            likersContainer.innerHTML = "<em>No likes yet</em>";
+            return;
+          }
+
+          console.log(`[showPostLikers] Found ${response.items.length} likers`);
+          const likersList = document.createElement("ul");
+          likersList.style.listStyle = "none";
+          likersList.style.padding = "0";
+          likersList.style.margin = "0";
+
+          response.items.forEach((like) => {
+            const likerEl = document.createElement("li");
+            likerEl.style.padding = "5px 0";
+            likerEl.style.borderBottom = "1px solid #eee";
+            likerEl.textContent = like.author_name || "Unknown";
+            likersList.appendChild(likerEl);
+          });
+
+          console.log(`[showPostLikers] Appending likers list to container`);
+
+          likersContainer.appendChild(likersList);
+          console.log(
+            `[showPostLikers] Successfully displayed ${response.items.length} likers`,
+          );
+        } catch (error) {
+          console.error(`[showPostLikers] ERROR Failed to load likers:`, error);
+          likersContainer.innerHTML = "<em>Failed to load likers</em>";
+        }
+      }
+
+      async function editPost(postId) {
+        const newCaption = prompt("Edit caption:");
+        if (newCaption === null) return;
+
+        try {
+          await SocialAPI.updatePost(postId, { caption: newCaption });
+          loadUserPosts();
+        } catch (error) {
+          console.error("Failed to edit post:", error);
+          alert("Failed to edit post: " + (error.message || "Unknown error"));
+        }
+      }
+
+      async function loadUserPosts() {
+        try {
+          const currentUserId = TokenManager.getUserId();
+          const response = await SocialAPI.getFeed(1, 100);
+
+          // Filter posts by current user
+          const userPosts = response.items.filter(
+            (post) => post.user_id === currentUserId,
+          );
+
+          const container = document.getElementById("userPostsContainer");
+          container.innerHTML = "";
+
+          if (userPosts.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <p>No posts yet</p>
+              </div>
+            `;
+            return;
+          }
+
+          userPosts.forEach((post) => {
+            // Use the exact same element creation as Feed, but add Edit button
+            const postEl = document.createElement("div");
+            postEl.className = "post-card";
+            postEl.setAttribute("data-post-id", post._id || post.id);
+
+            const images =
+              post.images && post.images.length > 0
+                ? post.images
+                    .map(
+                      (img) =>
+                        `<img src="${img}" class="post-images" alt="Post image" />`,
+                    )
+                    .join("")
+                : "";
+
+            postEl.innerHTML = `
+                <div class="post-header">
+                    <div>
+                        <div class="post-author">${post.author_name}</div>
+                        <div class="post-time">${formatDate(post.created_at)}</div>
+                    </div>
+                    <div>
+                        <button class="btn-secondary" onclick="editPost('${post._id || post.id}')" style="padding: 5px 10px; margin-right: 5px;">Edit</button>
+                        <button class="btn-secondary" onclick="deletePost('${post._id || post.id}')" style="padding: 5px 10px;">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="post-caption">${post.caption}</div>
+                ${images}
+                
+                <div class="post-stats">
+                    <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
+                    <span style="cursor: pointer;" onclick="toggleComments('${post._id || post.id}', null)">💬 ${post.comments_count || 0} comments</span>
+                </div>
+                
+                <div id="likers-${post._id || post.id}" style="display: none; padding: 10px; background: #f5f5f5; border-radius: 4px; margin: 10px 0; font-size: 0.9em;"></div>
+                
+                <div class="post-actions">
+                    <button class="post-action ${post.is_liked_by_user ? "liked" : ""}" onclick="toggleLike('${post._id || post.id}', this)">❤️ Like</button>
+                    <button class="post-action" onclick="toggleComments('${post._id || post.id}', this)">💬 Comment</button>
+                    <button class="post-action ${post.is_saved_by_user ? "saved" : ""}" onclick="toggleSave('${post._id || post.id}', this)">💾 Save</button>
+                </div>
+                
+                <div class="comments-section" id="comments-${post._id || post.id}" style="display: none;">
+                    <div id="comments-list-${post._id || post.id}"></div>
+                    <div class="comment-input-group">
+                        <input type="text" placeholder="Add a comment..." id="comment-input-${post._id || post.id}" />
+                        <button onclick="submitComment('${post._id || post.id}')">Post</button>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(postEl);
+          });
+        } catch (error) {
+          console.error("Failed to load user posts:", error);
+        }
+      }
+
+      function createSavedPostElement(post) {
+        const savedPostEl = document.createElement("div");
+        savedPostEl.className = "post-card";
+
+        const images =
+          post.images && post.images.length > 0
+            ? post.images
+                .map(
+                  (img) =>
+                    `<img src="${img}" class="post-images" alt="Post image" />`,
+                )
+                .join("")
+            : "";
+
+        savedPostEl.innerHTML = `
+            <div class="post-header">
+                <div>
+                    <div class="post-author">${post.author_name}</div>
+                    <div class="post-time">${formatDate(post.created_at)}</div>
+                </div>
+            </div>
+            
+            <div class="post-caption">${post.caption}</div>
+            ${images}
+            
+            <div class="post-stats">
+                <span>❤️ ${post.likes_count || 0} likes</span>
+                <span>💬 ${post.comments_count || 0} comments</span>
+            </div>
+            
+            <div class="post-actions">
+                <button class="post-action" onclick="goToPost('${post._id || post.id}')">🔗 Go to Post</button>
+                <button class="post-action" onclick="unsavePost('${post._id || post.id}')">🗑️ Unsave</button>
+            </div>
+        `;
+        return savedPostEl;
+      }
+
+      async function unsavePost(postId) {
+        try {
+          await SocialAPI.unsavePost(postId);
+          loadSavedPosts();
+        } catch (error) {
+          console.error("Failed to unsave post:", error);
+          alert("Failed to unsave post");
+        }
+      }
+
+      function goToPost(postId) {
+        // Switch to social (feed) section
+        showSection("social");
+
+        // Load feed and scroll to post
+        loadFeed(1)
+          .then(() => {
+            // Wait for DOM to update and posts to be rendered
+            setTimeout(() => {
+              let attempts = 0;
+              const maxAttempts = 30;
+
+              const tryScroll = setInterval(() => {
+                attempts++;
+                const postElement = document.querySelector(
+                  `[data-post-id="${postId}"]`,
+                );
+
+                if (postElement && postElement.offsetParent !== null) {
+                  // Element is visible
+                  clearInterval(tryScroll);
+                  // Scroll to post with smooth behavior
+                  postElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                  // Highlight the post briefly with a color that stands out
+                  const originalBgColor = postElement.style.backgroundColor;
+                  postElement.style.backgroundColor = "#fffacd";
+                  postElement.style.transition = "background-color 0.3s ease";
+                  setTimeout(() => {
+                    postElement.style.backgroundColor = originalBgColor;
+                  }, 2000);
+                } else if (attempts >= maxAttempts) {
+                  clearInterval(tryScroll);
+                  console.warn(
+                    `Could not find visible post with ID: ${postId}`,
+                  );
+                }
+              }, 100);
+            }, 300);
+          })
+          .catch((error) => {
+            console.error("Failed to load feed:", error);
+          });
+      }
+
+      async function loadSavedPosts() {
+        try {
+          const currentUserId = TokenManager.getUserId();
+          const response = await SocialAPI.getSavedPosts(currentUserId);
+          const container = document.getElementById("savedPostsContainer");
+          container.innerHTML = "";
+
+          if (!response.items || response.items.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">💾</div>
+                <p>No saved posts yet. Start saving posts by clicking the Save button!</p>
+              </div>
+            `;
+            return;
+          }
+
+          response.items.forEach((post) => {
+            const postEl = createSavedPostElement(post);
+            container.appendChild(postEl);
+          });
+        } catch (error) {
+          console.error("Failed to load saved posts:", error);
+          const container = document.getElementById("savedPostsContainer");
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">⚠️</div>
+              <p>Failed to load saved posts</p>
+            </div>
+          `;
+        }
+      }
+
+      function openCreatePostModal() {
+        document.getElementById("createPostModal").classList.add("active");
+      }
+
+      function closeCreatePostModal() {
+        document.getElementById("createPostModal").classList.remove("active");
+        document.getElementById("postCaption").value = "";
+        document.getElementById("postImages").value = "";
+      }
+
+      async function submitPost() {
+        const caption = document.getElementById("postCaption").value.trim();
+        const imagesInput = document.getElementById("postImages").value.trim();
+
+        if (!caption) {
+          alert("Please write something");
+          return;
+        }
+
+        try {
+          const images = imagesInput
+            ? imagesInput.split(",").map((img) => img.trim())
+            : [];
+          await SocialAPI.createPost(caption, images);
+          closeCreatePostModal();
+          loadFeed(1);
+        } catch (error) {
+          document.getElementById("createPostError").textContent =
+            error.message;
+          document.getElementById("createPostError").style.display = "block";
+        }
+      }
+
+      async function updateProfile() {
+        try {
+          await UserAPI.updateProfile(
+            document.getElementById("profileFirstName").value,
+            document.getElementById("profileLastName").value,
+            document.getElementById("profilePhone").value,
+          );
+          document.getElementById("profileSuccess").textContent =
+            "Profile updated successfully!";
+          document.getElementById("profileSuccess").style.display = "block";
+          initializeUser();
+        } catch (error) {
+          document.getElementById("profileError").textContent = error.message;
+          document.getElementById("profileError").style.display = "block";
+        }
+      }
+
+      function addToCart(productId, productName, price) {
+        const quantity = prompt(
+          `How many ${productName} do you want to add?`,
+          "1",
+        );
+        if (quantity && parseInt(quantity) > 0) {
+          // Get existing cart from localStorage
+          let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+          // Check if product already in cart - ensure proper ID matching
+          const normalizedId = String(productId);
+          const existingItem = cart.find(
+            (item) => String(item.id) === normalizedId,
+          );
+          if (existingItem) {
+            existingItem.quantity += parseInt(quantity);
+          } else {
+            cart.push({
+              id: normalizedId,
+              name: productName,
+              price: parseFloat(price),
+              quantity: parseInt(quantity),
+            });
+          }
+
+          // Save cart to localStorage
+          localStorage.setItem("cart", JSON.stringify(cart));
+
+          // Show cart
+          document.getElementById("cartModal").classList.add("active");
+          loadCartItems();
+
+          alert(`Added ${quantity}x ${productName} to cart!`);
+        }
+      }
+
+      function loadCartItems() {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const cartItems = document.getElementById("cartItems");
+
+        if (cart.length === 0) {
+          cartItems.innerHTML = "<p>Cart is empty</p>";
+          document.getElementById("cartTotal").textContent = "₹0";
+          return;
+        }
+
+        let total = 0;
+        cartItems.innerHTML = cart
+          .map((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            return `
+            <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>${item.name}</strong><br>
+                Price: ₹${item.price} × ${item.quantity}
+              </div>
+              <div>
+                ₹${itemTotal.toLocaleString()}
+                <button onclick="removeFromCart(${index})" style="margin-left: 10px; padding: 5px 10px; background: #f0f0f0; border: none; cursor: pointer; border-radius: 4px;">Remove</button>
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+
+        document.getElementById("cartTotal").textContent =
+          `₹${total.toLocaleString()}`;
+      }
+
+      function removeFromCart(index) {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        cart.splice(index, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        loadCartItems();
+      }
+
+      function closeCartModal() {
+        document.getElementById("cartModal").classList.remove("active");
+      }
+
+      // Load cart items when opening cart modal
+      document.addEventListener("DOMContentLoaded", function () {
+        const cartModal = document.getElementById("cartModal");
+        if (cartModal) {
+          const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+              if (
+                mutation.attributeName === "class" &&
+                mutation.target.classList.contains("active")
+              ) {
+                loadCartItems();
+              }
+            });
+          });
+          observer.observe(cartModal, { attributes: true });
+        }
+      });
+
+      function checkout() {
+        alert("Checkout feature coming soon!");
+      }
+
+      function sendChatMessage() {
+        const input = document.getElementById("chatInput");
+        if (!input.value.trim()) return;
+
+        alert("Chat feature will be implemented soon!");
+        input.value = "";
+      }
+
+      async function handleLogout() {
+        // Simply clear tokens and redirect
+        TokenManager.clear();
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 100);
+      }
+    </script>
+  </body>
+</html>

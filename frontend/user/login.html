@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jimi - Music Store & Social Platform</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+      }
+
+      .welcome-section {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px 40px;
+      }
+
+      .welcome-section h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+        font-weight: 700;
+      }
+
+      .welcome-section p {
+        font-size: 18px;
+        line-height: 1.6;
+        opacity: 0.9;
+      }
+
+      .login-section {
+        flex: 1;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px 40px;
+      }
+
+      .login-box {
+        max-width: 400px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .login-box h2 {
+        font-size: 32px;
+        margin-bottom: 30px;
+        color: #333;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+        color: #999;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #ddd;
+      }
+
+      .divider span {
+        background: white;
+        padding: 0 10px;
+        position: relative;
+      }
+
+      .social-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .social-btn {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .social-btn:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+      }
+
+      .signup-link {
+        margin-top: 20px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .signup-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .otp-section {
+        display: none;
+      }
+
+      .otp-input {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
+      .otp-digit {
+        width: 50px;
+        height: 50px;
+        text-align: center;
+        font-size: 20px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+
+      .otp-digit:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .error {
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+      }
+
+      .success {
+        color: #388e3c;
+        background: #e8f5e9;
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+      }
+
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+
+        .welcome-section {
+          padding: 40px 30px;
+        }
+
+        .login-section {
+          padding: 40px 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="welcome-section">
+        <h1>🎸 Welcome to Jimi</h1>
+        <p>
+          Your ultimate destination for music instruments and a vibrant music
+          community.
+        </p>
+        <p style="margin-top: 30px">
+          Connect with musicians, buy quality instruments, and share your
+          musical journey.
+        </p>
+      </div>
+
+      <div class="login-section">
+        <div class="login-box">
+          <div class="error" id="errorMsg"></div>
+          <div class="success" id="successMsg"></div>
+
+          <!-- Login Section -->
+          <div id="loginSection">
+            <h2>Login</h2>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                id="loginEmail"
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                id="loginPassword"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <div class="form-buttons">
+              <button class="btn btn-primary" onclick="handleEmailLogin()">
+                Login
+              </button>
+              <button class="btn btn-secondary" onclick="switchToRegister()">
+                Sign Up
+              </button>
+            </div>
+
+            <div class="divider">
+              <span>OR</span>
+            </div>
+
+            <div class="social-buttons">
+              <button class="social-btn" onclick="handleOTPRequest()">
+                📱 OTP Login
+              </button>
+              <button class="social-btn" onclick="handleGoogleLogin()">
+                🔵 Google
+              </button>
+            </div>
+          </div>
+
+          <!-- OTP Section -->
+          <div id="otpSection" class="otp-section">
+            <h2>OTP Login</h2>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="otpEmail" placeholder="your@email.com" />
+            </div>
+
+            <button
+              class="btn btn-primary"
+              style="width: 100%"
+              onclick="sendOTP()"
+            >
+              Send OTP
+            </button>
+
+            <div id="otpVerifySection" style="display: none; margin-top: 20px">
+              <label>Enter OTP</label>
+              <div class="otp-input">
+                <input type="text" class="otp-digit" maxlength="1" id="otp1" />
+                <input type="text" class="otp-digit" maxlength="1" id="otp2" />
+                <input type="text" class="otp-digit" maxlength="1" id="otp3" />
+                <input type="text" class="otp-digit" maxlength="1" id="otp4" />
+                <input type="text" class="otp-digit" maxlength="1" id="otp5" />
+                <input type="text" class="otp-digit" maxlength="1" id="otp6" />
+              </div>
+
+              <div class="form-buttons">
+                <button class="btn btn-primary" onclick="verifyOTP()">
+                  Verify
+                </button>
+                <button class="btn btn-secondary" onclick="switchToLogin()">
+                  Back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Register Section -->
+          <div id="registerSection" style="display: none">
+            <h2>Create Account</h2>
+
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="firstName" placeholder="John" />
+            </div>
+
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="lastName" placeholder="Doe" />
+            </div>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                id="registerEmail"
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                id="registerPassword"
+                placeholder="Min 8 characters"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm password"
+              />
+            </div>
+
+            <div class="form-buttons">
+              <button class="btn btn-primary" onclick="handleRegister()">
+                Create Account
+              </button>
+              <button class="btn btn-secondary" onclick="switchToLogin()">
+                Back
+              </button>
+            </div>
+          </div>
+
+          <div class="signup-link" id="signupLink">
+            Don't have an account?
+            <a onclick="switchToRegister()">Sign up here</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script>
+      // Check if already logged in
+      window.addEventListener("load", () => {
+        if (TokenManager.getAccessToken() && !TokenManager.isAdmin()) {
+          window.location.href = "dashboard.html";
+        }
+      });
+
+      function showError(message) {
+        const errorDiv = document.getElementById("errorMsg");
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+        setTimeout(() => {
+          errorDiv.style.display = "none";
+        }, 5000);
+      }
+
+      function showSuccess(message) {
+        const successDiv = document.getElementById("successMsg");
+        successDiv.textContent = message;
+        successDiv.style.display = "block";
+        setTimeout(() => {
+          successDiv.style.display = "none";
+        }, 5000);
+      }
+
+      function switchToRegister() {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("registerSection").style.display = "block";
+        document.getElementById("otpSection").style.display = "none";
+        document.getElementById("signupLink").style.display = "none";
+      }
+
+      function switchToLogin() {
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("registerSection").style.display = "none";
+        document.getElementById("otpSection").style.display = "none";
+        document.getElementById("signupLink").style.display = "block";
+        document.getElementById("otpVerifySection").style.display = "none";
+      }
+
+      async function handleRegister() {
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const email = document.getElementById("registerEmail").value.trim();
+        const password = document.getElementById("registerPassword").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        if (!firstName || !lastName || !email || !password) {
+          showError("All fields are required");
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showError("Passwords do not match");
+          return;
+        }
+
+        if (password.length < 8) {
+          showError("Password must be at least 8 characters");
+          return;
+        }
+
+        try {
+          const response = await AuthAPI.register(
+            firstName,
+            lastName,
+            email,
+            password,
+            confirmPassword,
+          );
+          showSuccess("Account created successfully! Please log in.");
+          setTimeout(() => switchToLogin(), 2000);
+        } catch (error) {
+          showError(error.message);
+        }
+      }
+
+      async function handleEmailLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+          showError("Email and password are required");
+          return;
+        }
+
+        try {
+          const response = await AuthAPI.login(email, password);
+          TokenManager.setTokens(response.access_token, response.refresh_token);
+          showSuccess("Login successful!");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1000);
+        } catch (error) {
+          showError(error.message);
+        }
+      }
+
+      function handleOTPRequest() {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("otpSection").style.display = "block";
+        document.getElementById("signupLink").style.display = "none";
+      }
+
+      async function sendOTP() {
+        const email = document.getElementById("otpEmail").value.trim();
+
+        if (!email) {
+          showError("Email is required");
+          return;
+        }
+
+        try {
+          await AuthAPI.requestOTP(email);
+          document.getElementById("otpVerifySection").style.display = "block";
+          showSuccess("OTP sent to your email");
+          document.getElementById("otp1").focus();
+        } catch (error) {
+          showError(error.message);
+        }
+      }
+
+      // Auto-focus next OTP digit
+      document.addEventListener("input", (e) => {
+        const otpInputs = ["otp1", "otp2", "otp3", "otp4", "otp5", "otp6"];
+        const currentIndex = otpInputs.indexOf(e.target.id);
+
+        if (e.target.value && currentIndex < otpInputs.length - 1) {
+          document.getElementById(otpInputs[currentIndex + 1]).focus();
+        }
+      });
+
+      async function verifyOTP() {
+        const otp = ["otp1", "otp2", "otp3", "otp4", "otp5", "otp6"]
+          .map((id) => document.getElementById(id).value)
+          .join("");
+
+        if (otp.length !== 6) {
+          showError("Please enter a valid 6-digit OTP");
+          return;
+        }
+
+        const email = document.getElementById("otpEmail").value.trim();
+
+        try {
+          const response = await AuthAPI.verifyOTP(email, otp);
+          TokenManager.setTokens(response.access_token, response.refresh_token);
+          showSuccess("Login successful!");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1000);
+        } catch (error) {
+          showError(error.message);
+        }
+      }
+
+      function handleGoogleLogin() {
+        showError("Google login will be implemented soon");
+      }
+    </script>
+  </body>
+</html>

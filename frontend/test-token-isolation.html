@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Token Storage Test</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 20px;
+      }
+      .test {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      .pass {
+        background: #d4edda;
+      }
+      .fail {
+        background: #f8d7da;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 2px 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Token Storage Isolation Test</h1>
+    <p>This page tests that admin and user tokens are stored separately.</p>
+
+    <div class="test">
+      <h3>Simulate Admin Login</h3>
+      <button onclick="simulateAdminLogin()">Set Admin Token</button>
+      <div id="adminResult"></div>
+    </div>
+
+    <div class="test">
+      <h3>Simulate User Login</h3>
+      <button onclick="simulateUserLogin()">Set User Token</button>
+      <div id="userResult"></div>
+    </div>
+
+    <div class="test">
+      <h3>Verify Isolation</h3>
+      <button onclick="verifyIsolation()">Check Storage</button>
+      <div id="verifyResult"></div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script>
+      function simulateAdminLogin() {
+        // Simulate admin context
+        const originalPath = window.location.pathname;
+        Object.defineProperty(window.location, "pathname", {
+          value: "/admin/dashboard.html",
+          configurable: true,
+        });
+
+        TokenManager.setTokens(
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbjEyMyIsImlzX2FkbWluIjp0cnVlfQ.test",
+          "refresh_admin_token",
+        );
+
+        const stored = sessionStorage.getItem("admin_accessToken");
+        document.getElementById("adminResult").innerHTML =
+          `<p class="${stored ? "pass" : "fail"}">Admin Token Stored: ${stored ? "YES" : "NO"}</p>
+                <code>admin_accessToken = ${stored ? "set" : "not set"}</code>`;
+
+        Object.defineProperty(window.location, "pathname", {
+          value: originalPath,
+          configurable: true,
+        });
+      }
+
+      function simulateUserLogin() {
+        // Simulate user context
+        const originalPath = window.location.pathname;
+        Object.defineProperty(window.location, "pathname", {
+          value: "/user/dashboard.html",
+          configurable: true,
+        });
+
+        TokenManager.setTokens(
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiaXNfYWRtaW4iOmZhbHNlfQ.test",
+          "refresh_user_token",
+        );
+
+        const stored = localStorage.getItem("user_accessToken");
+        document.getElementById("userResult").innerHTML =
+          `<p class="${stored ? "pass" : "fail"}">User Token Stored: ${stored ? "YES" : "NO"}</p>
+                <code>user_accessToken = ${stored ? "set" : "not set"}</code>`;
+
+        Object.defineProperty(window.location, "pathname", {
+          value: originalPath,
+          configurable: true,
+        });
+      }
+
+      function verifyIsolation() {
+        const adminToken = sessionStorage.getItem("admin_accessToken");
+        const userToken = localStorage.getItem("user_accessToken");
+        const adminTokenFromAdmin = sessionStorage.getItem("admin_accessToken");
+        const userTokenFromUser = localStorage.getItem("user_accessToken");
+
+        const adminExists = !!adminToken;
+        const userExists = !!userToken;
+        const isolated = adminExists && userExists;
+
+        document.getElementById("verifyResult").innerHTML = `
+                <p class="${adminExists ? "pass" : "fail"}">Admin Token in sessionStorage: ${adminExists ? "YES" : "NO"}</p>
+                <p class="${userExists ? "pass" : "fail"}">User Token in localStorage: ${userExists ? "YES" : "NO"}</p>
+                <p class="${isolated ? "pass" : "fail"}"><strong>Isolation Status: ${isolated ? "ISOLATED ✓" : "COLLISION ✗"}</strong></p>
+            `;
+      }
+    </script>
+  </body>
+</html>

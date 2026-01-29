@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+  <head>
+    <title>API Debug Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      button {
+        padding: 10px 20px;
+        background: #007acc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 10px 0;
+      }
+      button:hover {
+        background: #005a9e;
+      }
+      .error {
+        color: #f48771;
+      }
+      .success {
+        color: #4ec9b0;
+      }
+      h2 {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Simple API Debug Test</h1>
+
+      <h2>1. Check Token</h2>
+      <button onclick="checkToken()">Check Stored Token</button>
+
+      <h2>2. Fetch Posts from API</h2>
+      <button onclick="fetchPosts()">Fetch Posts from /api/v1/posts</button>
+
+      <h2>3. Check Dashboard HTML</h2>
+      <button onclick="checkDashboard()">Check if dashboard is loaded</button>
+
+      <h2>Output</h2>
+      <pre id="output"></pre>
+    </div>
+
+    <script>
+      const output = document.getElementById("output");
+
+      function log(message, isError = false) {
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix = isError ? "❌ ERROR" : "✓ INFO";
+        const line = `[${timestamp}] ${prefix}: ${message}\n`;
+        output.textContent += line;
+        output.scrollTop = output.scrollHeight;
+      }
+
+      function checkToken() {
+        output.textContent = "";
+        log("Checking localStorage for tokens...");
+
+        const token = localStorage.getItem("token");
+        const accessToken = localStorage.getItem("accessToken");
+        const user = localStorage.getItem("currentUser");
+
+        log(`token: ${token ? token.substring(0, 50) + "..." : "NOT SET"}`);
+        log(
+          `accessToken: ${accessToken ? accessToken.substring(0, 50) + "..." : "NOT SET"}`,
+        );
+        log(`currentUser: ${user ? user : "NOT SET"}`);
+
+        if (!token && !accessToken) {
+          log("No tokens found! User may not be logged in.", true);
+        }
+      }
+
+      function fetchPosts() {
+        output.textContent = "";
+        log("Attempting to fetch posts from /api/v1/posts...");
+
+        const token =
+          localStorage.getItem("accessToken") || localStorage.getItem("token");
+
+        if (!token) {
+          log("No token found! Cannot authenticate.", true);
+          return;
+        }
+
+        log(`Using token: ${token.substring(0, 50)}...`);
+
+        fetch("/api/v1/posts?page=1&page_size=5", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            log(`Response status: ${response.status}`);
+            return response.json();
+          })
+          .then((data) => {
+            log("✓ Successfully fetched posts!");
+            log(`Total posts: ${data.total}`);
+            log(`Posts in response: ${data.items.length}`);
+
+            if (data.items.length > 0) {
+              const post = data.items[0];
+              log(`\nFirst post structure:`);
+              log(`  Keys: ${Object.keys(post).join(", ")}`);
+              log(`  _id: ${post._id}`);
+              log(`  id: ${post.id}`);
+              log(`  author_name: ${post.author_name}`);
+              log(`  likes_count: ${post.likes_count}`);
+              log(`  comments_count: ${post.comments_count}`);
+            }
+          })
+          .catch((error) => {
+            log(`Error fetching posts: ${error.message}`, true);
+          });
+      }
+
+      function checkDashboard() {
+        output.textContent = "";
+
+        // Check if dashboard HTML is loaded
+        const profileSection = document.getElementById("profile");
+        const userPostsContainer =
+          document.getElementById("userPostsContainer");
+
+        log(`Looking for dashboard elements...`);
+        log(`profile section exists: ${profileSection ? "✓ YES" : "✗ NO"}`);
+        log(
+          `userPostsContainer exists: ${userPostsContainer ? "✓ YES" : "✗ NO"}`,
+        );
+
+        // Try to access the functions
+        log(`\nChecking if dashboard functions exist...`);
+        log(
+          `loadUserPosts function exists: ${typeof loadUserPosts !== "undefined" ? "✓ YES" : "✗ NO"}`,
+        );
+        log(
+          `createUserPostElement function exists: ${typeof createUserPostElement !== "undefined" ? "✓ YES" : "✗ NO"}`,
+        );
+        log(
+          `showPostLikers function exists: ${typeof showPostLikers !== "undefined" ? "✓ YES" : "✗ NO"}`,
+        );
+
+        log(`\nTrying to call loadUserPosts()...`);
+        try {
+          if (typeof loadUserPosts === "function") {
+            loadUserPosts()
+              .then(() => {
+                log("loadUserPosts completed");
+              })
+              .catch((error) => {
+                log(`loadUserPosts error: ${error.message}`, true);
+              });
+          } else {
+            log("loadUserPosts function not found!", true);
+          }
+        } catch (error) {
+          log(`Error calling loadUserPosts: ${error.message}`, true);
+        }
+      }
+
+      // Automatically run checks on load
+      window.addEventListener("DOMContentLoaded", function () {
+        log("Page loaded, ready to test");
+        log("Click buttons above to run tests");
+      });
+    </script>
+  </body>
+</html>

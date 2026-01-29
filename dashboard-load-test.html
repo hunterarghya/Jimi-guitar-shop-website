@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Dashboard Load Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .ready {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .error {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .info {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+      button {
+        padding: 10px 20px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 10px 0;
+      }
+      button:hover {
+        background: #1976d2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Dashboard Script Verification</h1>
+    <p>This page tests if the dashboard scripts are loading correctly.</p>
+
+    <div id="status"></div>
+
+    <h2>Tests</h2>
+    <button onclick="testDashboardScript()">
+      1. Test Dashboard Script Loading
+    </button>
+    <button onclick="testFunctionExists()">2. Test If Functions Exist</button>
+    <button onclick="testConsoleLogging()">3. Test Console Logging</button>
+
+    <h2>Debug Info</h2>
+    <div
+      id="debug"
+      style="
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      "
+    ></div>
+
+    <script>
+      const status = document.getElementById("status");
+      const debug = document.getElementById("debug");
+
+      function log(message, type = "info") {
+        const div = document.createElement("div");
+        div.className = `status ${type}`;
+        div.textContent = message;
+        status.appendChild(div);
+      }
+
+      function appendDebug(text) {
+        debug.textContent += text + "\n";
+      }
+
+      function testDashboardScript() {
+        debug.textContent = "";
+        log("Testing dashboard script loading...", "info");
+
+        // Try to fetch and check the dashboard HTML
+        fetch("/user/dashboard.html")
+          .then((r) => r.text())
+          .then((html) => {
+            if (html.includes("[createUserPostElement]")) {
+              log("✓ Dashboard has logging code", "ready");
+              appendDebug("Found: [createUserPostElement] logging");
+              appendDebug("");
+            } else {
+              log("✗ Dashboard missing logging code", "error");
+              appendDebug("Missing debug logging in dashboard");
+              appendDebug("");
+            }
+
+            if (html.includes("DASHBOARD SCRIPT LOADED")) {
+              log("✓ Dashboard has startup message", "ready");
+              appendDebug("Found: DASHBOARD SCRIPT LOADED message");
+            } else {
+              log("✗ Dashboard missing startup message", "error");
+              appendDebug("Missing startup console.log");
+            }
+          });
+      }
+
+      function testFunctionExists() {
+        debug.textContent = "";
+        log("Checking if dashboard functions exist...", "info");
+
+        appendDebug("This test page cannot access dashboard functions");
+        appendDebug("because they are scoped to the dashboard.html page.");
+        appendDebug("");
+        appendDebug("To test this:");
+        appendDebug("1. Open /user/dashboard.html");
+        appendDebug("2. Open DevTools (F12)");
+        appendDebug("3. Go to Console tab");
+        appendDebug("4. Type: typeof loadUserPosts");
+        appendDebug('5. Should see: "function"');
+        appendDebug("");
+        appendDebug('If you see "undefined", there is a JavaScript error.');
+      }
+
+      function testConsoleLogging() {
+        debug.textContent = "";
+        log("Console logging test:", "info");
+
+        appendDebug("Step-by-step to see console logs:");
+        appendDebug("");
+        appendDebug("1. IMPORTANT: Hard refresh the page");
+        appendDebug("   - Windows/Linux: Ctrl + Shift + R (or Ctrl + F5)");
+        appendDebug("   - Mac: Cmd + Shift + R");
+        appendDebug("");
+        appendDebug("2. Open DevTools by pressing F12");
+        appendDebug("");
+        appendDebug('3. Click the "Console" tab');
+        appendDebug("");
+        appendDebug("4. Look for this message:");
+        appendDebug("   === DASHBOARD SCRIPT LOADED ===");
+        appendDebug("");
+        appendDebug("5. If you see it, JavaScript is working!");
+        appendDebug("");
+        appendDebug("6. Then navigate to Profile section");
+        appendDebug("");
+        appendDebug("7. Look for messages like:");
+        appendDebug("   [loadUserPosts] Creating user post with ID: ...");
+        appendDebug(
+          "   [createUserPostElement] Creating element for post: ...",
+        );
+        appendDebug("   [showPostLikers] Called with postId: ...");
+        appendDebug("");
+        appendDebug(
+          "If you don't see the startup message, the page isn't loading the new code.",
+        );
+      }
+
+      // Run on load
+      window.addEventListener("DOMContentLoaded", function () {
+        log("Page ready. Click buttons to run tests.", "ready");
+      });
+    </script>
+  </body>
+</html>
