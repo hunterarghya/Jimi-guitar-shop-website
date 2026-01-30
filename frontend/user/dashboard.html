@@ -862,18 +862,8 @@
         </div>
 
         <div class="form-group">
-          <label>Images (URLs, comma-separated)</label>
-          <input
-            type="text"
-            id="postImages"
-            placeholder="https://example.com/image.jpg"
-            style="
-              width: 100%;
-              padding: 12px;
-              border: 1px solid #ddd;
-              border-radius: 6px;
-            "
-          />
+          <label>Upload Media</label>
+          <input type="file" id="postMedia" accept="image/*,video/*" />
         </div>
 
         <div style="display: flex; gap: 10px">
@@ -1150,13 +1140,19 @@
         postEl.className = "post-card";
         postEl.setAttribute("data-post-id", post._id || post.id);
 
-        const images =
+        const media =
           post.images && post.images.length > 0
             ? post.images
-                .map(
-                  (img) =>
-                    `<img src="${img}" class="post-images" alt="Post image" />`,
-                )
+                .map((url) => {
+                  if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                    return `
+              <video class="post-images" controls>
+                <source src="${url}">
+              </video>
+            `;
+                  }
+                  return `<img src="${url}" class="post-images" />`;
+                })
                 .join("")
             : "";
 
@@ -1173,7 +1169,7 @@
                 </div>
                 
                 <div class="post-caption">${post.caption}</div>
-                ${images}
+                ${media}
                 
                 <div class="post-stats">
                     <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
@@ -1455,57 +1451,46 @@
           }
 
           userPosts.forEach((post) => {
-            // Use the exact same element creation as Feed, but add Edit button
+            const postId = post._id || post.id;
+
             const postEl = document.createElement("div");
             postEl.className = "post-card";
-            postEl.setAttribute("data-post-id", post._id || post.id);
-
-            const images =
-              post.images && post.images.length > 0
-                ? post.images
-                    .map(
-                      (img) =>
-                        `<img src="${img}" class="post-images" alt="Post image" />`,
-                    )
-                    .join("")
-                : "";
 
             postEl.innerHTML = `
-                <div class="post-header">
-                    <div>
-                        <div class="post-author">${post.author_name}</div>
-                        <div class="post-time">${formatDate(post.created_at)}</div>
-                    </div>
-                    <div>
+    <div class="post-header">
+      <div>
+        <div class="post-author">${post.author_name}</div>
+        <div class="post-time">${formatDate(post.created_at)}</div>
+      </div>
+      <div>
                         <button class="btn-secondary" onclick="editPost('${post._id || post.id}')" style="padding: 5px 10px; margin-right: 5px;">Edit</button>
                         <button class="btn-secondary" onclick="deletePost('${post._id || post.id}')" style="padding: 5px 10px;">Delete</button>
                     </div>
-                </div>
-                
-                <div class="post-caption">${post.caption}</div>
-                ${images}
-                
-                <div class="post-stats">
-                    <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
-                    <span style="cursor: pointer;" onclick="toggleComments('${post._id || post.id}', null)">💬 ${post.comments_count || 0} comments</span>
-                </div>
-                
-                <div id="likers-${post._id || post.id}" style="display: none; padding: 10px; background: #f5f5f5; border-radius: 4px; margin: 10px 0; font-size: 0.9em;"></div>
-                
-                <div class="post-actions">
-                    <button class="post-action ${post.is_liked_by_user ? "liked" : ""}" onclick="toggleLike('${post._id || post.id}', this)">❤️ Like</button>
-                    <button class="post-action" onclick="toggleComments('${post._id || post.id}', this)">💬 Comment</button>
-                    <button class="post-action ${post.is_saved_by_user ? "saved" : ""}" onclick="toggleSave('${post._id || post.id}', this)">💾 Save</button>
-                </div>
-                
-                <div class="comments-section" id="comments-${post._id || post.id}" style="display: none;">
-                    <div id="comments-list-${post._id || post.id}"></div>
-                    <div class="comment-input-group">
-                        <input type="text" placeholder="Add a comment..." id="comment-input-${post._id || post.id}" />
-                        <button onclick="submitComment('${post._id || post.id}')">Post</button>
-                    </div>
-                </div>
-            `;
+    </div>
+
+    <div class="post-caption">${post.caption}</div>
+
+    ${
+      post.images && post.images.length
+        ? post.images
+            .map(
+              (img) =>
+                `<img src="${img}" class="post-images" alt="Post image" />`,
+            )
+            .join("")
+        : ""
+    }
+
+    <div style="margin-top: 15px; text-align: right;">
+      <button
+        class="btn btn-primary"
+        onclick="goToPost('${postId}')"
+        style="max-width: 150px;"
+      >
+        Go to Post →
+      </button>
+    </div>
+  `;
 
             container.appendChild(postEl);
           });
@@ -1649,29 +1634,54 @@
       function closeCreatePostModal() {
         document.getElementById("createPostModal").classList.remove("active");
         document.getElementById("postCaption").value = "";
-        document.getElementById("postImages").value = "";
+        document.getElementById("postMedia").value = "";
       }
 
       async function submitPost() {
         const caption = document.getElementById("postCaption").value.trim();
-        const imagesInput = document.getElementById("postImages").value.trim();
+        const mediaFile = document.getElementById("postMedia").files[0];
 
-        if (!caption) {
-          alert("Please write something");
+        if (!caption && !mediaFile) {
+          alert("Post must have text or media");
           return;
         }
 
+        let mediaUrls = [];
+
         try {
-          const images = imagesInput
-            ? imagesInput.split(",").map((img) => img.trim())
-            : [];
-          await SocialAPI.createPost(caption, images);
+          // 1️⃣ Upload media first (if exists)
+          if (mediaFile) {
+            const formData = new FormData();
+            formData.append("file", mediaFile);
+
+            const uploadRes = await fetch("/api/v1/posts/upload-media", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${TokenManager.getAccessToken()}`,
+              },
+              body: formData,
+            });
+
+            if (!uploadRes.ok) {
+              throw new Error("Media upload failed");
+            }
+
+            const uploadData = await uploadRes.json();
+            mediaUrls.push(uploadData.url);
+          }
+
+          // 2️⃣ Create post
+          await SocialAPI.createPost({
+            caption,
+            images: mediaUrls,
+          });
+
           closeCreatePostModal();
           loadFeed(1);
+          loadUserPosts();
         } catch (error) {
-          document.getElementById("createPostError").textContent =
-            error.message;
-          document.getElementById("createPostError").style.display = "block";
+          console.error("Failed to create post:", error);
+          alert(error.message || "Failed to create post");
         }
       }
 
