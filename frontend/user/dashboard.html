@@ -862,8 +862,18 @@
         </div>
 
         <div class="form-group">
-          <label>Upload Media</label>
-          <input type="file" id="postMedia" accept="image/*,video/*" />
+          <label>Images (URLs, comma-separated)</label>
+          <input
+            type="text"
+            id="postImages"
+            placeholder="https://example.com/image.jpg"
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 1px solid #ddd;
+              border-radius: 6px;
+            "
+          />
         </div>
 
         <div style="display: flex; gap: 10px">
@@ -1140,19 +1150,13 @@
         postEl.className = "post-card";
         postEl.setAttribute("data-post-id", post._id || post.id);
 
-        const media =
+        const images =
           post.images && post.images.length > 0
             ? post.images
-                .map((url) => {
-                  if (url.match(/\.(mp4|webm|ogg)$/i)) {
-                    return `
-              <video class="post-images" controls>
-                <source src="${url}">
-              </video>
-            `;
-                  }
-                  return `<img src="${url}" class="post-images" />`;
-                })
+                .map(
+                  (img) =>
+                    `<img src="${img}" class="post-images" alt="Post image" />`,
+                )
                 .join("")
             : "";
 
@@ -1169,7 +1173,7 @@
                 </div>
                 
                 <div class="post-caption">${post.caption}</div>
-                ${media}
+                ${images}
                 
                 <div class="post-stats">
                     <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
@@ -1634,54 +1638,29 @@
       function closeCreatePostModal() {
         document.getElementById("createPostModal").classList.remove("active");
         document.getElementById("postCaption").value = "";
-        document.getElementById("postMedia").value = "";
+        document.getElementById("postImages").value = "";
       }
 
       async function submitPost() {
         const caption = document.getElementById("postCaption").value.trim();
-        const mediaFile = document.getElementById("postMedia").files[0];
+        const imagesInput = document.getElementById("postImages").value.trim();
 
-        if (!caption && !mediaFile) {
-          alert("Post must have text or media");
+        if (!caption) {
+          alert("Please write something");
           return;
         }
 
-        let mediaUrls = [];
-
         try {
-          // 1️⃣ Upload media first (if exists)
-          if (mediaFile) {
-            const formData = new FormData();
-            formData.append("file", mediaFile);
-
-            const uploadRes = await fetch("/api/v1/posts/upload-media", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${TokenManager.getAccessToken()}`,
-              },
-              body: formData,
-            });
-
-            if (!uploadRes.ok) {
-              throw new Error("Media upload failed");
-            }
-
-            const uploadData = await uploadRes.json();
-            mediaUrls.push(uploadData.url);
-          }
-
-          // 2️⃣ Create post
-          await SocialAPI.createPost({
-            caption,
-            images: mediaUrls,
-          });
-
+          const images = imagesInput
+            ? imagesInput.split(",").map((img) => img.trim())
+            : [];
+          await SocialAPI.createPost(caption, images);
           closeCreatePostModal();
           loadFeed(1);
-          loadUserPosts();
         } catch (error) {
-          console.error("Failed to create post:", error);
-          alert(error.message || "Failed to create post");
+          document.getElementById("createPostError").textContent =
+            error.message;
+          document.getElementById("createPostError").style.display = "block";
         }
       }
 
