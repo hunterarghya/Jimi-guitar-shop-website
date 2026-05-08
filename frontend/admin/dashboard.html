@@ -452,13 +452,20 @@
         <section id="products" class="section">
           <h2>📦 Products</h2>
 
-          <button
-            class="btn btn-primary"
-            onclick="openAddProductModal()"
-            style="margin-bottom: 20px"
-          >
-            + Add Product
-          </button>
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button
+              class="btn btn-primary"
+              onclick="openAddProductModal()"
+            >
+              + Add Product
+            </button>
+            <button
+              class="btn btn-secondary"
+              onclick="openManageCategoriesModal()"
+            >
+              ⚙️ Manage Categories
+            </button>
+          </div>
 
           <div class="table-container">
             <table>
@@ -574,11 +581,7 @@
         <div class="form-group">
           <label>Category</label>
           <select id="productCategory">
-            <option value="guitar">Guitars</option>
-            <option value="drums">Drums</option>
-            <option value="keyboard">Keyboards</option>
-            <option value="bass">Bass</option>
-            <option value="percussion">Percussion</option>
+            <!-- Dynamically populated -->
           </select>
         </div>
 
@@ -593,6 +596,13 @@
         </div>
 
         <div class="form-group">
+          <label>Product Images</label>
+          <input type="file" id="productImageFiles" multiple accept="image/*" />
+          <div id="imagePreview" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
+          <div id="uploadedImages" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
           <label>Description</label>
           <textarea id="productDescription"></textarea>
         </div>
@@ -604,6 +614,29 @@
           <button class="btn btn-secondary" onclick="closeAddProductModal()">
             Cancel
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Categories Modal -->
+    <div id="manageCategoriesModal" class="modal">
+      <div class="modal-content" style="max-width: 500px;">
+        <span class="modal-close" onclick="closeManageCategoriesModal()">&times;</span>
+        <div class="modal-header">Manage Categories</div>
+
+        <div id="categoryError" class="error"></div>
+
+        <div class="form-group" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <input type="text" id="newCategoryName" placeholder="New category name (e.g., Flutes)" style="flex: 1;">
+          <button class="btn btn-success" onclick="submitAddCategory()">Add</button>
+        </div>
+
+        <div id="categoriesList" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="form-actions" style="margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="closeManageCategoriesModal()">Close</button>
         </div>
       </div>
     </div>
@@ -666,6 +699,7 @@
 
         initializeAdmin();
         loadDashboard();
+        loadCategories();
         loadProducts();
         loadModerationQueue();
         loadDiscounts();
@@ -716,7 +750,10 @@
         event.target.classList.add("active");
 
         // Reload data when switching sections
-        if (sectionId === "products") loadProducts();
+        if (sectionId === "products") {
+          loadCategories();
+          loadProducts();
+        }
         if (sectionId === "moderation") loadModerationQueue();
         if (sectionId === "discounts") loadDiscounts();
         if (sectionId === "orders") loadOrders();
@@ -778,7 +815,12 @@
             .map(
               (product) => `
             <tr>
-              <td>${product.name}</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  ${product.images && product.images.length > 0 ? `<img src="${product.images[0].url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : `<div style="width: 40px; height: 40px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px;">🎸</div>`}
+                  ${product.name}
+                </div>
+              </td>
               <td>${product.category}</td>
               <td>₹${parseFloat(product.price).toLocaleString()}</td>
               <td>${product.stock_quantity || product.stock || 0}</td>
@@ -917,6 +959,122 @@
         }
       }
 
+      // Category Management
+      let categories = [];
+
+      async function loadCategories() {
+        try {
+          categories = await CategoryAPI.listCategories();
+          
+          // Populate dropdowns
+          const dropdown = document.getElementById("productCategory");
+          const currentValue = dropdown.value;
+          dropdown.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+          if (currentValue) dropdown.value = currentValue;
+
+          // Populate list in modal if active
+          if (document.getElementById("manageCategoriesModal").classList.contains("active")) {
+            renderCategoriesList();
+          }
+        } catch (error) {
+          console.error("Failed to load categories:", error);
+        }
+      }
+
+      function renderCategoriesList() {
+        const list = document.getElementById("categoriesList");
+        if (categories.length === 0) {
+          list.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No categories yet</div>';
+          return;
+        }
+
+        list.innerHTML = categories.map(c => {
+          const id = c._id || c.id;
+          return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #eee;">
+            <div id="cat-display-${id}" style="flex: 1;">
+              <strong>${c.name}</strong>
+            </div>
+            <div id="cat-edit-${id}" style="flex: 1; display: none;">
+              <input type="text" id="input-${id}" value="${c.name}" style="padding: 5px; width: 100%;">
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-secondary btn-sm" id="btn-edit-${id}" onclick="toggleEditCategory('${id}')">Edit</button>
+              <button class="btn btn-success btn-sm" id="btn-save-${id}" style="display: none;" onclick="submitUpdateCategory('${id}')">Save</button>
+              <button class="btn btn-danger btn-sm" onclick="submitDeleteCategory('${id}')">Delete</button>
+            </div>
+          </div>
+        `}).join('');
+      }
+
+      function openManageCategoriesModal() {
+        document.getElementById("manageCategoriesModal").classList.add("active");
+        renderCategoriesList();
+      }
+
+      function closeManageCategoriesModal() {
+        document.getElementById("manageCategoriesModal").classList.remove("active");
+        document.getElementById("categoryError").style.display = "none";
+      }
+
+      async function submitAddCategory() {
+        const nameInput = document.getElementById("newCategoryName");
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        try {
+          await CategoryAPI.createCategory(name);
+          nameInput.value = "";
+          await loadCategories();
+        } catch (error) {
+          const errEl = document.getElementById("categoryError");
+          errEl.textContent = error.message;
+          errEl.style.display = "block";
+        }
+      }
+
+      function toggleEditCategory(id) {
+        const display = document.getElementById(`cat-display-${id}`);
+        const edit = document.getElementById(`cat-edit-${id}`);
+        const editBtn = document.getElementById(`btn-edit-${id}`);
+        const saveBtn = document.getElementById(`btn-save-${id}`);
+
+        if (display.style.display === "none") {
+          display.style.display = "block";
+          edit.style.display = "none";
+          editBtn.textContent = "Edit";
+          saveBtn.style.display = "none";
+        } else {
+          display.style.display = "none";
+          edit.style.display = "block";
+          editBtn.textContent = "Cancel";
+          saveBtn.style.display = "inline-block";
+        }
+      }
+
+      async function submitUpdateCategory(id) {
+        const name = document.getElementById(`input-${id}`).value.trim();
+        if (!name) return;
+
+        try {
+          await CategoryAPI.updateCategory(id, name);
+          await loadCategories();
+        } catch (error) {
+          alert("Error updating category: " + error.message);
+        }
+      }
+
+      async function submitDeleteCategory(id) {
+        if (!confirm("Are you sure? This will not delete products in this category.")) return;
+
+        try {
+          await CategoryAPI.deleteCategory(id);
+          await loadCategories();
+        } catch (error) {
+          alert("Error deleting category: " + error.message);
+        }
+      }
+
       function openAddProductModal() {
         // Clear edit state
         const modal = document.getElementById("addProductModal");
@@ -938,6 +1096,9 @@
         document.getElementById("productPrice").value = "";
         document.getElementById("productStock").value = "";
         document.getElementById("productDescription").value = "";
+        document.getElementById("productImageFiles").value = "";
+        document.getElementById("imagePreview").innerHTML = "";
+        document.getElementById("uploadedImages").textContent = "";
         document.getElementById("productError").style.display = "none";
 
         // Reset button text
@@ -970,22 +1131,55 @@
 
           if (editingProductId) {
             // Update existing product
+            const currentProduct = await ProductAPI.getProduct(editingProductId);
+            
+            // Upload new images if any
+            const imageFiles = document.getElementById("productImageFiles").files;
+            let productImages = currentProduct.images || [];
+            
+            if (imageFiles.length > 0) {
+              for (let i = 0; i < imageFiles.length; i++) {
+                const uploadResult = await ProductAPI.uploadProductImage(imageFiles[i]);
+                productImages.push({
+                  url: uploadResult.url,
+                  alt_text: name,
+                  is_primary: productImages.length === 0 && i === 0
+                });
+              }
+            }
+
             await ProductAPI.updateProduct(editingProductId, {
               name,
               category,
               price,
-              stock_quantity: stock,
+              stock: stock,
               description,
+              images: productImages
             });
             alert("Product updated successfully!");
           } else {
             // Create new product
+            const imageFiles = document.getElementById("productImageFiles").files;
+            let productImages = [];
+            
+            if (imageFiles.length > 0) {
+              for (let i = 0; i < imageFiles.length; i++) {
+                const uploadResult = await ProductAPI.uploadProductImage(imageFiles[i]);
+                productImages.push({
+                  url: uploadResult.url,
+                  alt_text: name,
+                  is_primary: i === 0
+                });
+              }
+            }
+
             await ProductAPI.createProduct({
               name,
               category,
               price,
               stock_quantity: stock,
               description,
+              images: productImages
             });
             alert("Product added successfully!");
           }

@@ -134,3 +134,28 @@ class ProductFilterRequest(BaseModel):
                 "page_size": 20,
             }
         }
+
+
+class CategoryCreate(BaseModel):
+    """Create category request."""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class CategoryUpdate(BaseModel):
+    """Update category request."""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class CategoryResponse(BaseModel):
+    """Category response."""
+    id: str = Field(alias="_id")
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        populate_by_name = True
+        from_attributes = True

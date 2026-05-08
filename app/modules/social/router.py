@@ -1,5 +1,5 @@
 """Social router - API endpoints."""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, File, UploadFile
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import get_mongo_db, get_db
@@ -14,6 +14,7 @@ from app.modules.social.schemas import (
     CommentResponse,
 )
 from app.middleware import AppException
+from app.core.imagekit import ImageKitHelper
 from typing import Optional
 import logging
 
@@ -251,3 +252,35 @@ async def get_user_saved_posts(
 
     service = SocialService(db)
     return await service.get_saved_posts(user_id=user_id, page=page, page_size=page_size)
+
+
+@router.post("/upload-media", response_model=dict)
+async def upload_social_media(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+):
+    """Upload media for social posts (images and short videos)."""
+    # Allowed types
+    if file.content_type.startswith("image/"):
+        folder = "social/images"
+    elif file.content_type.startswith("video/"):
+        folder = "social/videos"
+    else:
+        raise AppException("Unsupported file type. Only images and videos are allowed.", 400)
+
+    try:
+        content = await file.read()
+        
+        # Check size: 30MB
+        if len(content) > 30 * 1024 * 1024:
+            raise AppException("File size exceeds 30MB limit", 400)
+
+        result = await ImageKitHelper.upload_file(
+            file_content=content,
+            file_name=file.filename,
+            folder=folder
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Failed to upload social media: {str(e)}")
+        raise AppException(f"Upload failed: {str(e)}", 500)

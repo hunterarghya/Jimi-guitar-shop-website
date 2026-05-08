@@ -614,9 +614,6 @@
         <button class="nav-tab" onclick="showSection('profile')">
           👤 Profile
         </button>
-        <button class="nav-tab" onclick="showSection('chatbot')">
-          🤖 Ask Jimi
-        </button>
       </div>
 
       <div class="user-menu">
@@ -645,11 +642,7 @@
               <label>Category</label>
               <select id="categoryFilter" onchange="loadProducts(1)">
                 <option value="">All Categories</option>
-                <option value="guitar">Guitars</option>
-                <option value="drums">Drums</option>
-                <option value="keyboard">Keyboards</option>
-                <option value="bass">Bass</option>
-                <option value="percussion">Percussion</option>
+                <!-- Dynamically populated -->
               </select>
             </div>
             <div class="filter-group">
@@ -780,57 +773,6 @@
         </div>
       </section>
 
-      <!-- Chatbot Section -->
-      <section id="chatbot" class="section">
-        <div style="max-width: 600px; margin: 0 auto">
-          <h2 style="margin-bottom: 20px">🤖 Ask Jimi</h2>
-          <div
-            style="
-              background: white;
-              padding: 20px;
-              border-radius: 8px;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            "
-          >
-            <div
-              id="chatContainer"
-              style="
-                height: 400px;
-                overflow-y: auto;
-                padding-bottom: 20px;
-                border: 1px solid #eee;
-                border-radius: 8px;
-                margin-bottom: 15px;
-                padding: 15px;
-              "
-            >
-              <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
-                <p>Chat feature coming soon...</p>
-              </div>
-            </div>
-            <div style="display: flex; gap: 10px">
-              <input
-                type="text"
-                placeholder="Ask Jimi..."
-                id="chatInput"
-                style="
-                  flex: 1;
-                  padding: 12px;
-                  border: 1px solid #ddd;
-                  border-radius: 6px;
-                "
-              />
-              <button
-                class="btn btn-primary"
-                onclick="sendChatMessage()"
-                style="width: 100px"
-              >
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
 
@@ -862,18 +804,9 @@
         </div>
 
         <div class="form-group">
-          <label>Images (URLs, comma-separated)</label>
-          <input
-            type="text"
-            id="postImages"
-            placeholder="https://example.com/image.jpg"
-            style="
-              width: 100%;
-              padding: 12px;
-              border: 1px solid #ddd;
-              border-radius: 6px;
-            "
-          />
+          <label>Media (Image or Video max 30MB)</label>
+          <input type="file" id="postMediaFile" accept="image/*,video/*" />
+          <div id="mediaPreview" style="margin-top: 10px;"></div>
         </div>
 
         <div style="display: flex; gap: 10px">
@@ -961,6 +894,7 @@
         }
 
         initializeUser();
+        loadCategories();
         loadProducts(1);
         loadFeed(1);
 
@@ -1033,6 +967,22 @@
         }
       }
 
+      async function loadCategories() {
+        try {
+          const categories = await CategoryAPI.listCategories();
+          const filter = document.getElementById("categoryFilter");
+          const currentValue = filter.value;
+          
+          // Keep the "All Categories" option
+          filter.innerHTML = '<option value="">All Categories</option>' + 
+            categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+          
+          if (currentValue) filter.value = currentValue;
+        } catch (error) {
+          console.error("Failed to load categories:", error);
+        }
+      }
+
       async function loadProducts(page) {
         try {
           const category = document.getElementById("categoryFilter").value;
@@ -1076,7 +1026,9 @@
               const card = document.createElement("div");
               card.className = "product-card";
               card.innerHTML = `
-                            <div class="product-image">🎸 ${product.name}</div>
+                            <div class="product-image">
+                              ${product.images && product.images.length > 0 ? `<img src="${product.images[0].url}" style="width: 100%; height: 100%; object-fit: cover;">` : `🎸 ${product.name}`}
+                            </div>
                             <div class="product-info">
                                 <div class="product-name">${product.name}</div>
                                 <div class="product-category">${product.category}</div>
@@ -1150,13 +1102,16 @@
         postEl.className = "post-card";
         postEl.setAttribute("data-post-id", post._id || post.id);
 
-        const images =
+        const mediaHtml =
           post.images && post.images.length > 0
             ? post.images
-                .map(
-                  (img) =>
-                    `<img src="${img}" class="post-images" alt="Post image" />`,
-                )
+                .map((img) => {
+                  const url = img.url || img;
+                  if (img.media_type === "video") {
+                    return `<video src="${url}" class="post-images" controls style="max-height: 400px; background: #000; width: 100%; border-radius: 8px;"></video>`;
+                  }
+                  return `<img src="${url}" class="post-images" alt="Post image" style="width: 100%; border-radius: 8px;" />`;
+                })
                 .join("")
             : "";
 
@@ -1173,7 +1128,7 @@
                 </div>
                 
                 <div class="post-caption">${post.caption}</div>
-                ${images}
+                ${mediaHtml}
                 
                 <div class="post-stats">
                     <span style="cursor: pointer;" onclick="showPostLikers('${post._id || post.id}', this)">❤️ ${post.likes_count || 0} likes</span>
@@ -1475,12 +1430,15 @@
     <div class="post-caption">${post.caption}</div>
 
     ${
-      post.images && post.images.length
+      post.images && post.images.length > 0
         ? post.images
-            .map(
-              (img) =>
-                `<img src="${img}" class="post-images" alt="Post image" />`,
-            )
+            .map((img) => {
+              const url = img.url || img;
+              if (img.media_type === "video") {
+                return `<video src="${url}" class="post-images" controls style="max-height: 400px; background: #000; width: 100%; border-radius: 8px;"></video>`;
+              }
+              return `<img src="${url}" class="post-images" alt="Post image" style="width: 100%; border-radius: 8px;" />`;
+            })
             .join("")
         : ""
     }
@@ -1507,13 +1465,16 @@
         const savedPostEl = document.createElement("div");
         savedPostEl.className = "post-card";
 
-        const images =
+        const mediaHtml =
           post.images && post.images.length > 0
             ? post.images
-                .map(
-                  (img) =>
-                    `<img src="${img}" class="post-images" alt="Post image" />`,
-                )
+                .map((img) => {
+                  const url = img.url || img;
+                  if (img.media_type === "video") {
+                    return `<video src="${url}" class="post-images" controls style="max-height: 400px; background: #000; width: 100%; border-radius: 8px;"></video>`;
+                  }
+                  return `<img src="${url}" class="post-images" alt="Post image" style="width: 100%; border-radius: 8px;" />`;
+                })
                 .join("")
             : "";
 
@@ -1526,7 +1487,7 @@
             </div>
             
             <div class="post-caption">${post.caption}</div>
-            ${images}
+            ${mediaHtml}
             
             <div class="post-stats">
                 <span>❤️ ${post.likes_count || 0} likes</span>
@@ -1638,12 +1599,13 @@
       function closeCreatePostModal() {
         document.getElementById("createPostModal").classList.remove("active");
         document.getElementById("postCaption").value = "";
-        document.getElementById("postImages").value = "";
+        document.getElementById("postMediaFile").value = "";
+        document.getElementById("mediaPreview").innerHTML = "";
       }
 
       async function submitPost() {
         const caption = document.getElementById("postCaption").value.trim();
-        const imagesInput = document.getElementById("postImages").value.trim();
+        const mediaFile = document.getElementById("postMediaFile").files[0];
 
         if (!caption) {
           alert("Please write something");
@@ -1651,11 +1613,18 @@
         }
 
         try {
-          const images = imagesInput
-            ? imagesInput.split(",").map((img) => img.trim())
-            : [];
-          await SocialAPI.createPost(caption, images);
+          let mediaItems = [];
+          if (mediaFile) {
+            const uploadResult = await SocialAPI.uploadMedia(mediaFile);
+            mediaItems.push({
+              url: uploadResult.url,
+              media_type: mediaFile.type.startsWith("video/") ? "video" : "image"
+            });
+          }
+          
+          await SocialAPI.createPost(caption, mediaItems);
           closeCreatePostModal();
+          alert("Post submitted for approval!");
           loadFeed(1);
         } catch (error) {
           document.getElementById("createPostError").textContent =
@@ -1784,13 +1753,6 @@
         alert("Checkout feature coming soon!");
       }
 
-      function sendChatMessage() {
-        const input = document.getElementById("chatInput");
-        if (!input.value.trim()) return;
-
-        alert("Chat feature will be implemented soon!");
-        input.value = "";
-      }
 
       async function handleLogout() {
         // Simply clear tokens and redirect

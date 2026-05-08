@@ -101,6 +101,10 @@ class Settings(BaseSettings):
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_WINDOW_SECONDS: int = 60
 
+    # Admin Setup
+    ADMIN_EMAIL: str = "admin@jimi.com"
+    ADMIN_PASSWORD: str = "AdminPass123!"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

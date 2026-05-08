@@ -120,6 +120,54 @@ async function apiCall(endpoint, options = {}) {
   }
 }
 
+// Multipart API Helper (for file uploads)
+async function apiCallMultipart(endpoint, formData, options = {}) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const headers = {
+    ...options.headers,
+  };
+
+  // Add authorization header
+  const token = TokenManager.getAccessToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // NOTE: When using FormData, we MUST NOT set Content-Type header.
+  // The browser will set it automatically with the boundary string.
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      method: options.method || "POST",
+      headers,
+      body: formData,
+    });
+
+    if (response.status === 401) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return apiCallMultipart(endpoint, formData, options);
+      } else {
+        window.location.href = window.location.pathname.includes("/admin")
+          ? "/admin/login.html"
+          : "/user/login.html";
+        return null;
+      }
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || `API Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Multipart Error:", error);
+    throw error;
+  }
+}
+
 async function refreshAccessToken() {
   const refreshToken = TokenManager.getRefreshToken();
   if (!refreshToken) return false;
@@ -266,6 +314,39 @@ const ProductAPI = {
 
   async deleteProduct(productId) {
     return apiCall(`/api/v1/products/${productId}`, {
+      method: "DELETE",
+    });
+  },
+
+  async uploadProductImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiCallMultipart("/api/v1/products/upload-image", formData);
+  },
+};
+
+// Category APIs
+const CategoryAPI = {
+  async listCategories() {
+    return apiCall("/api/v1/products/categories/all");
+  },
+
+  async createCategory(name, description = "") {
+    return apiCall("/api/v1/products/categories", {
+      method: "POST",
+      body: JSON.stringify({ name, description }),
+    });
+  },
+
+  async updateCategory(categoryId, name, description = "") {
+    return apiCall(`/api/v1/products/categories/${categoryId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name, description }),
+    });
+  },
+
+  async deleteCategory(categoryId) {
+    return apiCall(`/api/v1/products/categories/${categoryId}`, {
       method: "DELETE",
     });
   },
@@ -448,6 +529,12 @@ const SocialAPI = {
         description,
       }),
     });
+  },
+
+  async uploadMedia(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiCallMultipart("/api/v1/posts/upload-media", formData);
   },
 };
 

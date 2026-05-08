@@ -36,7 +36,7 @@ class SocialService:
             "user_id": user_id,
             "author_name": author_name,
             "caption": req.caption,
-            "images": req.images,
+            "images": [img.model_dump() if hasattr(img, 'model_dump') else img for img in req.images] if req.images else [],
             "tags": req.tags,
         }
 
@@ -76,7 +76,7 @@ class SocialService:
         if req.caption:
             update_data["caption"] = req.caption
         if req.images:
-            update_data["images"] = req.images
+            update_data["images"] = [img.model_dump() if hasattr(img, 'model_dump') else img for img in req.images]
         if req.tags:
             update_data["tags"] = req.tags
 

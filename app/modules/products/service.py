@@ -3,13 +3,16 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
-from app.modules.products.repository import ProductRepository
+from app.modules.products.repository import ProductRepository, CategoryRepository
 from app.modules.products.schemas import (
     ProductResponse,
     ProductListResponse,
     ProductFilterRequest,
     CreateProductRequest,
     UpdateProductRequest,
+    CategoryCreate,
+    CategoryUpdate,
+    CategoryResponse,
 )
 from app.middleware import AppException
 import logging
@@ -42,8 +45,8 @@ class ProductService:
             "price": float(req.price),
             "stock": req.stock_quantity,
             "sku": sku,
-            "images": req.images,
-            "specifications": req.specifications,
+            "images": [img.model_dump() if hasattr(img, 'model_dump') else img for img in req.images] if req.images else [],
+            "specifications": [spec.model_dump() if hasattr(spec, 'model_dump') else spec for spec in req.specifications] if req.specifications else [],
             "brand": req.brand,
             "warranty_months": req.warranty_months,
             "weight_kg": req.weight_kg,
@@ -84,9 +87,9 @@ class ProductService:
         if req.stock is not None:
             update_data["stock"] = req.stock
         if req.images:
-            update_data["images"] = req.images
+            update_data["images"] = [img.model_dump() if hasattr(img, 'model_dump') else img for img in req.images]
         if req.specifications:
-            update_data["specifications"] = req.specifications
+            update_data["specifications"] = [spec.model_dump() if hasattr(spec, 'model_dump') else spec for spec in req.specifications]
         if req.brand:
             update_data["brand"] = req.brand
         if req.warranty_months:
@@ -205,4 +208,58 @@ class ProductService:
             reviews_count=product.get("reviews_count", 0),
             created_at=product.get("created_at"),
             updated_at=product.get("updated_at"),
+        )
+
+
+class CategoryService:
+    """Category service."""
+
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.repository = CategoryRepository(db)
+
+    async def create_category(self, req: CategoryCreate) -> CategoryResponse:
+        """Create new category."""
+        category_data = {
+            "name": req.name,
+            "description": req.description,
+        }
+        category_id = await self.repository.create(category_data)
+        doc = await self.repository.get_by_id(category_id)
+        return self._format_response(doc)
+
+    async def list_categories(self) -> List[CategoryResponse]:
+        """List all categories."""
+        categories = await self.repository.get_all()
+        return [self._format_response(c) for c in categories]
+
+    async def update_category(self, category_id: str, req: CategoryUpdate) -> CategoryResponse:
+        """Update category."""
+        update_data = {}
+        if req.name:
+            update_data["name"] = req.name
+        if req.description is not None:
+            update_data["description"] = req.description
+
+        success = await self.repository.update(category_id, update_data)
+        if not success:
+            raise AppException("Failed to update category or category not found", 404)
+
+        doc = await self.repository.get_by_id(category_id)
+        return self._format_response(doc)
+
+    async def delete_category(self, category_id: str) -> dict:
+        """Delete category."""
+        success = await self.repository.delete(category_id)
+        if not success:
+            raise AppException("Failed to delete category or category not found", 404)
+        return {"message": "Category deleted successfully"}
+
+    def _format_response(self, category: dict) -> CategoryResponse:
+        """Format MongoDB document to response schema."""
+        return CategoryResponse(
+            id=str(category["_id"]),
+            name=category.get("name"),
+            description=category.get("description"),
+            created_at=category.get("created_at"),
+            updated_at=category.get("updated_at"),
         )

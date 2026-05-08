@@ -30,7 +30,6 @@ from app.modules.orders.router import router as orders_router
 from app.modules.social.router import router as social_router
 from app.modules.moderation.router import router as moderation_router
 from app.modules.admin.router import router as admin_router
-from app.modules.chatbot.router import router as chatbot_router
 
 # Configure logging
 logging.config.dictConfig({
@@ -102,7 +101,8 @@ def create_app() -> FastAPI:
     )
     
     # Trusted Host Middleware
-    allowed_hosts = ["localhost", "127.0.0.1", "testserver"]
+    # In development, allow all hosts to avoid issues with Nginx/Docker networking
+    allowed_hosts = ["*"] if settings.DEBUG else ["localhost", "127.0.0.1"]
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=allowed_hosts,
@@ -126,7 +126,6 @@ def create_app() -> FastAPI:
     app.include_router(social_router)
     app.include_router(moderation_router)
     app.include_router(admin_router)
-    app.include_router(chatbot_router)
     
     # Mount frontend static files at root (MUST be after all API routers)
     frontend_path = Path(__file__).parent.parent / "frontend"

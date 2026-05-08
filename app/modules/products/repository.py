@@ -238,3 +238,57 @@ class ProductRepository:
         except Exception as e:
             logger.error(f"Error searching products: {str(e)}")
             return []
+
+
+class CategoryRepository:
+    """Category repository for MongoDB operations."""
+
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
+        self.collection: AsyncIOMotorCollection = db["categories"]
+
+    async def init_indexes(self) -> None:
+        """Initialize MongoDB indexes."""
+        await self.collection.create_index("name", unique=True)
+        logger.info("Category indexes created")
+
+    async def create(self, category_data: Dict[str, Any]) -> str:
+        """Create category."""
+        category_data["created_at"] = datetime.now(timezone.utc)
+        category_data["updated_at"] = datetime.now(timezone.utc)
+
+        result = await self.collection.insert_one(category_data)
+        return str(result.inserted_id)
+
+    async def get_all(self) -> List[Dict]:
+        """Get all categories."""
+        return await self.collection.find().sort("name", 1).to_list(length=None)
+
+    async def get_by_id(self, category_id: str) -> Optional[Dict]:
+        """Get category by ID."""
+        try:
+            return await self.collection.find_one({"_id": ObjectId(category_id)})
+        except Exception:
+            return None
+
+    async def update(self, category_id: str, update_data: Dict[str, Any]) -> bool:
+        """Update category."""
+        try:
+            update_data["updated_at"] = datetime.now(timezone.utc)
+            result = await self.collection.update_one(
+                {"_id": ObjectId(category_id)},
+                {"$set": update_data},
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            logger.error(f"Error updating category {category_id}: {str(e)}")
+            return False
+
+    async def delete(self, category_id: str) -> bool:
+        """Delete category (hard delete)."""
+        try:
+            result = await self.collection.delete_one({"_id": ObjectId(category_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            logger.error(f"Error deleting category {category_id}: {str(e)}")
+            return False
