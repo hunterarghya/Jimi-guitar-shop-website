@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
 from decimal import Decimal
+from motor.motor_asyncio import AsyncIOMotorDatabase
 import math
 from app.modules.orders.models import Order, OrderStatus, Payment, PaymentStatus
 from app.modules.orders.schemas import (
@@ -21,24 +22,38 @@ logger = logging.getLogger(__name__)
 class OrderService:
     """Order service."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, mongo_db: AsyncIOMotorDatabase = None):
         self.db = db
+        self.mongo_db = mongo_db
         self.settings = get_settings()
 
     async def create_order(self, user_id: UUID, req: CreateOrderRequest) -> tuple[OrderResponse, dict]:
         """Create order (returns order and razorpay order details)."""
         # Validate home delivery radius
         if req.is_home_delivery:
+            # Get dynamic shop settings
+            shop_lat = self.settings.SHOP_LATITUDE
+            shop_lon = self.settings.SHOP_LONGITUDE
+            shop_radius = self.settings.SHOP_RADIUS_KM
+
+            if self.mongo_db:
+                settings_col = self.mongo_db["shop_settings"]
+                dynamic_settings = await settings_col.find_one({"type": "global"})
+                if dynamic_settings:
+                    shop_lat = dynamic_settings.get("shop_lat", shop_lat)
+                    shop_lon = dynamic_settings.get("shop_lon", shop_lon)
+                    shop_radius = dynamic_settings.get("delivery_radius_km", shop_radius)
+
             distance = self._calculate_distance(
                 req.shipping_address.latitude,
                 req.shipping_address.longitude,
-                self.settings.SHOP_LATITUDE,
-                self.settings.SHOP_LONGITUDE,
+                shop_lat,
+                shop_lon,
             )
 
-            if distance > self.settings.SHOP_RADIUS_KM:
+            if distance > shop_radius:
                 raise AppException(
-                    f"Delivery not available. Location is {distance:.1f}km away (max {self.settings.SHOP_RADIUS_KM}km)",
+                    f"Delivery not available. Location is {distance:.1f}km away (max {shop_radius}km)",
                     400,
                 )
 
@@ -228,3 +243,27 @@ class OrderService:
             created_at=payment.created_at,
             updated_at=payment.updated_at,
         )
+
+    async def check_delivery_radius(self, latitude: float, longitude: float) -> dict:
+        """Check if a location is within delivery radius."""
+        shop_lat = self.settings.SHOP_LATITUDE
+        shop_lon = self.settings.SHOP_LONGITUDE
+        shop_radius = self.settings.SHOP_RADIUS_KM
+
+        if self.mongo_db:
+            settings_col = self.mongo_db["shop_settings"]
+            dynamic_settings = await settings_col.find_one({"type": "global"})
+            if dynamic_settings:
+                shop_lat = dynamic_settings.get("shop_lat", shop_lat)
+                shop_lon = dynamic_settings.get("shop_lon", shop_lon)
+                shop_radius = dynamic_settings.get("delivery_radius_km", shop_radius)
+
+        distance = self._calculate_distance(latitude, longitude, shop_lat, shop_lon)
+        is_deliverable = distance <= shop_radius
+
+        return {
+            "is_deliverable": is_deliverable,
+            "distance_km": round(distance, 2),
+            "shop_radius_km": shop_radius,
+            "message": "Within delivery radius" if is_deliverable else f"Outside delivery radius ({distance:.1f}km away)",
+        }

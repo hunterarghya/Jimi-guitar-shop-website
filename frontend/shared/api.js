@@ -620,6 +620,17 @@ const AdminAPI = {
   async getModerationStats() {
     return apiCall("/api/v1/moderation/statistics");
   },
+
+  async getShopSettings() {
+    return apiCall("/api/v1/admin/shop-settings");
+  },
+
+  async updateShopSettings(data) {
+    return apiCall("/api/v1/admin/shop-settings", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Utility functions

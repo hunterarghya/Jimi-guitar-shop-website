@@ -11,6 +11,8 @@ from app.modules.orders.schemas import (
     PaymentResponse,
     RazorpayWebhook,
     VerifyPaymentRequest,
+    CheckDeliveryRequest,
+    CheckDeliveryResponse,
 )
 from app.modules.products.service import ProductService
 from app.modules.cart.service import CartService
@@ -46,7 +48,7 @@ async def create_order(
     await product_service.bulk_reserve_stock(stock_reserve)
 
     # Create order
-    order_service = OrderService(db)
+    order_service = OrderService(db, mongo_db)
     order_response, razorpay_order_data = await order_service.create_order(user_id, req)
 
     # Clear cart
@@ -80,6 +82,18 @@ async def get_order(
 
     order_service = OrderService(db)
     return await order_service.get_order(oid, UUID(current_user["sub"]))
+
+
+@router.post("/api/v1/orders/check-delivery", response_model=CheckDeliveryResponse)
+async def check_delivery(
+    req: CheckDeliveryRequest,
+    mongo_db: AsyncIOMotorDatabase = Depends(get_mongo_db),
+    db: AsyncSession = Depends(get_db),
+):
+    """Check if location is within delivery radius."""
+    order_service = OrderService(db, mongo_db)
+    result = await order_service.check_delivery_radius(req.latitude, req.longitude)
+    return CheckDeliveryResponse(**result)
 
 
 @router.get("/api/v1/orders")

@@ -8,6 +8,7 @@ from app.modules.admin.schemas import (
     TopSellingProducts,
     PopularProduct,
     DeliveryStatus,
+    ShopSettingsResponse,
 )
 import logging
 
@@ -208,3 +209,29 @@ class AdminService:
         except Exception as e:
             logger.error(f"Error getting admin stats: {str(e)}")
             raise
+
+    async def get_shop_settings(self) -> ShopSettingsResponse:
+        """Get shop settings."""
+        try:
+            settings = await self.repository.get_shop_settings()
+            if not settings:
+                # Return default settings if none found
+                return ShopSettingsResponse(
+                    shop_address="Default Shop Address",
+                    shop_lat=0.0,
+                    shop_lon=0.0,
+                    delivery_radius_km=10.0,
+                    updated_at=datetime.utcnow()
+                )
+            return ShopSettingsResponse(**settings)
+        except Exception as e:
+            logger.error(f"Error in get_shop_settings: {str(e)}")
+            raise
+
+    async def update_shop_settings(self, settings_data: Dict[str, Any]) -> bool:
+        """Update shop settings."""
+        try:
+            return await self.repository.update_shop_settings(settings_data)
+        except Exception as e:
+            logger.error(f"Error in update_shop_settings: {str(e)}")
+            return False

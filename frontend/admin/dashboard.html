@@ -539,6 +539,35 @@
         <section id="orders" class="section">
           <h2>🛒 Orders</h2>
 
+          <!-- Shop Settings Section -->
+          <div class="table-container" style="margin-bottom: 30px; padding: 20px;">
+            <h3 style="margin-bottom: 15px;">Shop & Delivery Settings</h3>
+            <div id="shopSettingsError" class="error"></div>
+            <div id="shopSettingsSuccess" class="success"></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label>Shop Address</label>
+                <input type="text" id="shopAddress" placeholder="123 Guitar St, Rock City" />
+              </div>
+              <div class="form-group">
+                <label>Delivery Radius (KM)</label>
+                <input type="number" id="deliveryRadius" placeholder="10" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>Latitude</label>
+                <input type="number" id="shopLat" placeholder="12.9716" step="0.000001" />
+              </div>
+              <div class="form-group">
+                <label>Longitude</label>
+                <input type="number" id="shopLon" placeholder="77.5946" step="0.000001" />
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+              <button class="btn btn-primary" onclick="saveShopSettings()">Save Settings</button>
+            </div>
+          </div>
+
           <div class="table-container">
             <table>
               <thead>
@@ -756,7 +785,9 @@
         }
         if (sectionId === "moderation") loadModerationQueue();
         if (sectionId === "discounts") loadDiscounts();
-        if (sectionId === "orders") loadOrders();
+        if (sectionId === "orders") {
+          loadOrders();
+        }
       }
 
       async function loadDashboard() {
@@ -934,17 +965,18 @@
 
       async function loadOrders() {
         try {
+          loadShopSettings();
           const response = await OrderAPI.getOrders(1, 10);
           const tbody = document.getElementById("ordersTable");
           tbody.innerHTML = "";
 
-          if (!response.items || response.items.length === 0) {
+          if (!response.orders || response.orders.length === 0) {
             tbody.innerHTML =
               '<tr><td colspan="5" style="text-align: center; padding: 40px;">No orders yet</td></tr>';
             return;
           }
 
-          response.items.forEach((order) => {
+          response.orders.forEach((order) => {
             const row = tbody.insertRow();
             row.innerHTML = `
                         <td>${order.id}</td>
@@ -1302,6 +1334,60 @@
         } catch (error) {
           TokenManager.clear();
           window.location.href = "login.html";
+        }
+      }
+
+      async function loadShopSettings() {
+        try {
+          const settings = await AdminAPI.getShopSettings();
+          if (settings) {
+            document.getElementById("shopAddress").value = settings.shop_address || "";
+            document.getElementById("shopLat").value = settings.shop_lat || "";
+            document.getElementById("shopLon").value = settings.shop_lon || "";
+            document.getElementById("deliveryRadius").value = settings.delivery_radius_km || "";
+          }
+        } catch (error) {
+          console.error("Failed to load shop settings:", error);
+        }
+      }
+
+      async function saveShopSettings() {
+        const data = {
+          shop_address: document.getElementById("shopAddress").value.trim(),
+          shop_lat: parseFloat(document.getElementById("shopLat").value),
+          shop_lon: parseFloat(document.getElementById("shopLon").value),
+          delivery_radius_km: parseFloat(document.getElementById("deliveryRadius").value),
+        };
+
+        if (!data.shop_address || isNaN(data.shop_lat) || isNaN(data.shop_lon) || isNaN(data.delivery_radius_km)) {
+          showSettingsStatus("Please fill all fields with valid data", "error");
+          return;
+        }
+
+        try {
+          await AdminAPI.updateShopSettings(data);
+          showSettingsStatus("Shop settings updated successfully!", "success");
+        } catch (error) {
+          showSettingsStatus(error.message, "error");
+        }
+      }
+
+      function showSettingsStatus(message, type) {
+        const errorEl = document.getElementById("shopSettingsError");
+        const successEl = document.getElementById("shopSettingsSuccess");
+        
+        errorEl.style.display = "none";
+        successEl.style.display = "none";
+        
+        if (type === "error") {
+          errorEl.textContent = message;
+          errorEl.style.display = "block";
+        } else {
+          successEl.textContent = message;
+          successEl.style.display = "block";
+          setTimeout(() => {
+            successEl.style.display = "none";
+          }, 3000);
         }
       }
     </script>

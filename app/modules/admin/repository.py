@@ -394,3 +394,32 @@ class AdminRepository:
         except Exception as e:
             logger.error(f"Error deleting job posting: {str(e)}")
             return False
+
+    async def get_shop_settings(self) -> Optional[Dict[str, Any]]:
+        """Get shop settings from MongoDB."""
+        try:
+            settings_col = self.mongo_db["shop_settings"]
+            settings = await settings_col.find_one({"type": "global"})
+            if settings:
+                settings["id"] = str(settings.get("_id"))
+            return settings
+        except Exception as e:
+            logger.error(f"Error getting shop settings: {str(e)}")
+            return None
+
+    async def update_shop_settings(self, settings_data: Dict[str, Any]) -> bool:
+        """Update or create shop settings in MongoDB."""
+        try:
+            settings_col = self.mongo_db["shop_settings"]
+            settings_data["type"] = "global"
+            settings_data["updated_at"] = datetime.utcnow()
+            
+            result = await settings_col.update_one(
+                {"type": "global"},
+                {"$set": settings_data},
+                upsert=True
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Error updating shop settings: {str(e)}")
+            return False

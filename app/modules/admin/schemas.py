@@ -196,3 +196,20 @@ class AdminStatsResponse(BaseModel):
     pending_moderation: int = Field(..., description="Posts pending moderation")
     pending_deliveries: int = Field(..., description="Pending deliveries")
     average_rating: float = Field(..., description="Average product rating")
+
+
+class ShopSettingsRequest(BaseModel):
+    """Shop settings update request."""
+    shop_address: str = Field(..., min_length=5, description="Physical address of the shop")
+    shop_lat: float = Field(..., description="Latitude of the shop")
+    shop_lon: float = Field(..., description="Longitude of the shop")
+    delivery_radius_km: float = Field(..., gt=0, description="Delivery radius in kilometers")
+
+
+class ShopSettingsResponse(BaseModel):
+    """Shop settings response."""
+    shop_address: str = Field(..., description="Physical address of the shop")
+    shop_lat: float = Field(..., description="Latitude of the shop")
+    shop_lon: float = Field(..., description="Longitude of the shop")
+    delivery_radius_km: float = Field(..., description="Delivery radius in kilometers")
+    updated_at: datetime = Field(..., description="Last updated at")

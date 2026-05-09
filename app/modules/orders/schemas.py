@@ -137,3 +137,17 @@ class PaymentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CheckDeliveryRequest(BaseModel):
+    """Delivery radius check request."""
+    latitude: float = Field(..., description="User's latitude")
+    longitude: float = Field(..., description="User's longitude")
+
+
+class CheckDeliveryResponse(BaseModel):
+    """Delivery radius check response."""
+    is_deliverable: bool = Field(..., description="Is the location within delivery radius")
+    distance_km: float = Field(..., description="Distance from shop in KM")
+    shop_radius_km: float = Field(..., description="Shop's configured delivery radius")
+    message: str = Field(..., description="Status message")

@@ -17,6 +17,8 @@ from app.modules.admin.schemas import (
     DeliveryQueueResponse,
     UpdateDeliveryRequest,
     DeliveryInfo,
+    ShopSettingsRequest,
+    ShopSettingsResponse,
 )
 from app.modules.admin.service import AdminService
 from app.modules.admin.repository import AdminRepository
@@ -414,3 +416,49 @@ async def update_delivery(
     except Exception as e:
         logger.error(f"Error updating delivery: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update delivery")
+
+
+# Shop settings management endpoints
+
+@router.get("/shop-settings", response_model=ShopSettingsResponse)
+async def get_shop_settings(
+    _: dict = Depends(verify_admin_user),
+    service: AdminService = Depends(admin_service),
+):
+    """Get shop settings.
+    
+    Requires: Admin role
+    """
+    try:
+        return await service.get_shop_settings()
+    except Exception as e:
+        logger.error(f"Error getting shop settings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get shop settings")
+
+
+@router.patch("/shop-settings", response_model=ShopSettingsResponse)
+async def update_shop_settings(
+    request: ShopSettingsRequest,
+    _: dict = Depends(verify_admin_user),
+    service: AdminService = Depends(admin_service),
+):
+    """Update shop settings.
+    
+    Parameters:
+    - shop_address: Physical address
+    - shop_lat & shop_lon: Coordinates
+    - delivery_radius_km: Radius in KM
+    
+    Requires: Admin role
+    """
+    try:
+        settings_data = request.model_dump()
+        success = await service.update_shop_settings(settings_data)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to update shop settings")
+        
+        return await service.get_shop_settings()
+    except Exception as e:
+        logger.error(f"Error updating shop settings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update shop settings")
